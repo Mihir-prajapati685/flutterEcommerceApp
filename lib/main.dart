@@ -1,30 +1,24 @@
-import 'package:ecommerce_app/Main_screen.dart';
-import 'package:ecommerce_app/authenticationform/signup.dart';
-import 'package:ecommerce_app/homescreenwidget/grid_item_product.dart';
-import 'package:ecommerce_app/homescreenwidget/icon_list.dart';
-import 'package:ecommerce_app/splash_screen.dart';
+import 'package:ecommerce_app/presentation/Introduction/introduction_page.dart';
+import 'package:ecommerce_app/presentation/mainhomescreen/Main_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import './presentation/authentication/Loginpageauth/bloc/login_bloc_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(
-   ProviderScope(child:  MyApp())
-     );
-}
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Ecommerce Website',
-      home: MyHomePage(title:''),
-      debugShowCheckedModeBanner: false,
-      routes: {
-        '/signup_route':(context)=>Sign_up(),
-      },
-    );
-  }
+    BlocProvider(
+      create: (context) => LoginBlocBloc(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: MyHomePage(title: ''),
+      ),
+    ),
+  );
 }
 
 class MyHomePage extends StatefulWidget {
@@ -40,39 +34,33 @@ class MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    whereToGo();
+    checkUserLoginStatus();
   }
-  void whereToGo() async {
-    var sharedpref = await SharedPreferences.getInstance();
 
-    var isloginIn = sharedpref.getBool(KEYFORM);
+  void checkUserLoginStatus() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    var sharedPref = await SharedPreferences.getInstance();
+    bool? isLoggedIn = sharedPref.getBool('isLoggedIn');
 
-    if (isloginIn != null) {
-      if (isloginIn) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (contex) => MainScreenState()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (contex) => SplashScreen()),
-        );
-      }
-    } else {
+    if (user != null || isLoggedIn == true) {
+      // User already logged in
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (contex) => SplashScreen()),
+        MaterialPageRoute(builder: (context) => MainScreenState()),
+      );
+    } else {
+      // User not logged in
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => IntroductionPage()),
       );
     }
   }
 
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.amber,
-        appBar:AppBar(
-         backgroundColor: Colors.deepOrangeAccent,
-
-    ),
+    return Scaffold(
+      backgroundColor: Colors.amber,
+      appBar: AppBar(backgroundColor: Colors.deepOrangeAccent),
     );
   }
 }
