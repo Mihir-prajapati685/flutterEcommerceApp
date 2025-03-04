@@ -5,7 +5,6 @@ sealed class BagEvent {}
 
 class WomenCategoryLoadEvent extends BagEvent {}
 
-class WomenCategoryButtonClickedIdEvent extends BagEvent {
-  final String id;
-  WomenCategoryButtonClickedIdEvent(this.id);
-}
+class MenCategoryLoadEvent extends BagEvent {}
+
+class KidsCategoryLoadEvent extends BagEvent {}

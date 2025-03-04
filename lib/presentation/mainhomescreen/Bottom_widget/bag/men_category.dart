@@ -1,96 +1,116 @@
+import 'package:ecommerce_app/presentation/Productcartscreen/categoryWishCard.dart';
+import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/bag/bloc/bag_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class MenCategory extends StatelessWidget {
-  MenCategory({super.key});
-  final List<Map<String, String>> menCategories = [
-    {
-      "title": "Jeans",
-      "image":
-          "https://static.vecteezy.com/system/resources/thumbnails/040/220/078/small/ai-generated-men-s-jeans-close-up-of-a-man-s-hand-in-a-jeans-pocket-photo.jpg"
-    },
-    {
-      "title": "Formal Wear",
-      "image":
-          "https://i.pinimg.com/474x/70/ae/10/70ae1024f1545e725d40e49f77aedf8c.jpg"
-    },
-    {
-      "title": "Shorts",
-      "image":
-          "https://i.pinimg.com/736x/51/1e/5c/511e5c1d57af11f3b15242bb43c3560b.jpg"
-    },
-    {
-      "title": "Shirts",
-      "image":
-          "https://img.freepik.com/free-photo/basic-green-shirt-men-rsquo-s-fashion-apparel-studio-shoot_53876-101197.jpg"
-    },
-    {
-      "title": "Tshirts",
-      "image": "https://veirdo.in/cdn/shop/files/vb200.jpg?v=1728462042"
-    },
-    {
-      "title": "Jackets",
-      "image":
-          "https://img.freepik.com/free-photo/young-handsome-man-walking-down-street_1303-24594.jpg"
-    },
-  ];
-
+class MenCategory extends StatefulWidget {
   @override
+  State<MenCategory> createState() => _MenCategory();
+}
+
+class _MenCategory extends State<MenCategory> {
+  final BagBloc bagBloc = BagBloc();
+  @override
+  void initState() {
+    super.initState();
+    bagBloc.add(MenCategoryLoadEvent());
+  }
+
   Widget build(BuildContext context) {
-    return Expanded(
-      child: ListView.builder(
-          itemCount: menCategories.length,
-          itemBuilder: (context, index) {
-            return Container(
-              margin: EdgeInsets.all(10),
-              width: double.infinity,
-              height: 150,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                    color: const Color.fromARGB(255, 243, 76, 64), width: 1),
-                // boxShadow: [
-                //   BoxShadow(
-                //       color: Colors.grey, spreadRadius: 1, blurRadius: 3),
-                // ]
-              ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    left: 5,
-                    top: 50,
-                    child: Text(
-                      menCategories[index]['title']!,
-                      style: GoogleFonts.b612(
-                          fontSize: 25,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w400),
-                    ),
-                  ),
-                  Positioned(
-                      right: 0,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(10),
-                            bottomRight: Radius.circular(10)),
-                        child: Container(
-                          width: 185,
-                          height: 150,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(20),
-                                  bottomRight: Radius.circular(20))),
-                          child: Image.network(
-                            menCategories[index]["image"]!,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      )),
-                ],
-              ),
+    return BlocConsumer(
+        bloc: bagBloc,
+        listener: (context, state) {
+          if (state is CathcErrorMenState) {
+            Fluttertoast.showToast(msg: 'error catch ');
+          }
+        },
+        builder: (context, state) {
+          if (state is MenCategoryLoadingState) {
+            return Center(
+              child: CircularProgressIndicator(),
             );
-          }),
-    );
+          } else if (state is MenCategoryLoadedState) {
+            return Expanded(
+              child: ListView.builder(
+                  itemCount: state.mencategory.length,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      margin: EdgeInsets.all(10),
+                      width: double.infinity,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: const Color.fromARGB(255, 243, 76, 64),
+                            width: 1),
+                        // boxShadow: [
+                        //   BoxShadow(
+                        //       color: Colors.grey, spreadRadius: 1, blurRadius: 3),
+                        // ]
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 5,
+                            top: 50,
+                            child: Text(
+                              state.mencategory[index]['title']!,
+                              style: GoogleFonts.b612(
+                                  fontSize: 25,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w400),
+                            ),
+                          ),
+                          Positioned(
+                              right: 0,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.only(
+                                    topRight: Radius.circular(10),
+                                    bottomRight: Radius.circular(10)),
+                                child: Container(
+                                  width: 185,
+                                  height: 150,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                          topRight: Radius.circular(20),
+                                          bottomRight: Radius.circular(20))),
+                                  child: Image.network(
+                                    state.mencategory[index]["image"]!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              )),
+                          Positioned(
+                              left: 20,
+                              bottom: 10,
+                              child: Container(
+                                  child: IconButton(
+                                onPressed: () {
+                                  final categoryId = state.mencategory[index]
+                                          ['id'] ??
+                                      "default_id";
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Womencards(
+                                              categoryid: categoryId)));
+                                },
+                                icon: Icon(
+                                  Icons.arrow_circle_right_sharp,
+                                  size: 30,
+                                  color: Colors.red,
+                                ),
+                              ))),
+                        ],
+                      ),
+                    );
+                  }),
+            );
+          }
+          return Container();
+        });
   }
 }

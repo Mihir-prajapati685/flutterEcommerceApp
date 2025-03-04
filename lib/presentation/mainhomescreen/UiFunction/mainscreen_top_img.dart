@@ -54,8 +54,8 @@ class TopimgPage extends StatelessWidget {
                 child: TextButton(
                   onPressed: () {},
                   child: Text(
-                    'click me',
-                    style: TextStyle(color: Colors.white),
+                    'Check',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ),
               ),

@@ -1,54 +1,24 @@
-import 'package:ecommerce_app/presentation/mainhomescreen/UiFunction/onbottomtab.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class Cart extends StatefulWidget {
-  const Cart({super.key});
-  @override
-  State<Cart> createState() => _Cart_widget();
-}
-
-class _Cart_widget extends State<Cart> {
-  @override
+class Cart extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.redAccent,
-        title: Text("this is cart"),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType
-            .fixed, // ✅ Ensure all items are aligned properly
-        // ✅ Customize selected item color
-        unselectedItemColor: Colors.grey, // ✅ Customize unselected item color
-        showSelectedLabels: true, // ✅ Show labels always
-        showUnselectedLabels: true,
-        onTap: (index) => onItemTapped(
-          context,
-          index,
-        ), // ✅ Ensure unselected labels are also visible
-        items: [
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.home),
-            label: "Home",
+        backgroundColor: Colors.white,
+        elevation: 1,
+        title: const Text(
+          "Filters",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.shoppingBag),
-            label: "Bag",
-          ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.user),
-            label: "Profile",
-          ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.cartPlus),
-            label: "Cart",
-          ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.userCircle),
-            label: "User",
-          ),
-        ],
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
     );
   }

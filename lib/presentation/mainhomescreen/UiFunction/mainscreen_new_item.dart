@@ -1,3 +1,4 @@
+import 'package:ecommerce_app/presentation/ProductDetail/productdetail.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/bloc/mainscreen_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -46,55 +47,66 @@ class MainscreenNewItem extends StatelessWidget {
                       final product = state.product[index];
                       return Container(
                         width: 200,
-                        margin:
-                            EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+                        margin: EdgeInsets.only(top: 20, left: 10),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           color: Colors.grey[100],
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.3),
-                              blurRadius: 5,
-                              spreadRadius: 2,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
+                          // boxShadow: [
+                          //   BoxShadow(
+                          //     color: Colors.grey.withOpacity(0.3),
+                          //     blurRadius: 5,
+                          //     spreadRadius: 2,
+                          //     offset: Offset(0, 3),
+                          //   ),
+                          // ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Stack(
-                              children: [
-                                Container(
-                                  height: 300,
-                                  width: double.infinity,
-                                  child: Image.network(
-                                    product['image'],
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 7,
-                                  left: 7,
-                                  child: Container(
-                                    height: 25,
-                                    width: 45,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black,
-                                      borderRadius: BorderRadius.circular(50),
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ProductDetail(
+                                              img: product['image'],
+                                              name: product['title'],
+                                              id: product['id'].toString(),
+                                            )));
+                              },
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: 300,
+                                    width: double.infinity,
+                                    child: Image.network(
+                                      product['image'],
+                                      fit: BoxFit.cover,
                                     ),
-                                    child: Center(
-                                      child: Text(
-                                        "new",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
+                                  ),
+                                  Positioned(
+                                    top: 7,
+                                    left: 7,
+                                    child: Container(
+                                      height: 25,
+                                      width: 45,
+                                      decoration: BoxDecoration(
+                                        color: Colors.black,
+                                        borderRadius: BorderRadius.circular(50),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          "new",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             RatingBarIndicator(
                               rating: (product['rating']['rate']).toDouble(),

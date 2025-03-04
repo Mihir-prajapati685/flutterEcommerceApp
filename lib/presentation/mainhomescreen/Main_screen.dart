@@ -1,4 +1,5 @@
 import 'package:ecommerce_app/presentation/mainhomescreen/UiFunction/mainscreen_new_item.dart';
+import 'package:ecommerce_app/presentation/mainhomescreen/UiFunction/mainscreen_offer_item.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/UiFunction/mainscreen_sale_item.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/UiFunction/mainscreen_top_img.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/UiFunction/mainscreen_topbrand_item.dart';
@@ -21,10 +22,14 @@ class _MainScreenState extends State<MainScreenState> {
             //for top img function....
             TopimgPage(),
             Padding(
-              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+              padding: EdgeInsets.only(top: 20, left: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  OfferScreen(),
+                  SizedBox(
+                    height: 30,
+                  ),
                   MainscreenNewItem(),
                   MainscreenSaleItem(),
                   MainscreenTopbrandItem(),

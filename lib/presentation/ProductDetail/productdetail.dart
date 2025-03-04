@@ -1,10 +1,16 @@
+import 'package:ecommerce_app/presentation/ProductDetail/bloc/addtocart_bloc.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ProductDetail extends StatefulWidget {
   final String img;
   final String name;
+  final String id;
 
-  ProductDetail({required this.img, required this.name});
+  ProductDetail({required this.img, required this.name, required this.id});
 
   @override
   _ProductDetailState createState() => _ProductDetailState();
@@ -17,7 +23,7 @@ class _ProductDetailState extends State<ProductDetail> {
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOtDN9v-U3McxsiaJmdmLj0rW7yA1RHDdh2iuxo9buipWtnJhO5q5Pfv_X9c5ZM7agXmY&usqp=CAU",
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWy48dJqmmZ5mQaLfJ_OzedAisYj8GF_Nf7X-cTu27f8nIC7rDOGPDH4OY_pw2U5Xzm-s&usqp=CAU"
   ]; // State for quantity selection
-
+  final AddtocartBloc addtocartBloc = AddtocartBloc();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,9 +37,14 @@ class _ProductDetailState extends State<ProductDetail> {
             actions: [
               Padding(
                 padding: EdgeInsets.only(right: 20),
-                child: Icon(
-                  Icons.share,
-                  size: 20,
+                child: IconButton(
+                  onPressed: () async {
+                    await _createDynamicLinkAndShare(widget.id, widget.name);
+                  },
+                  icon: Icon(
+                    Icons.share,
+                    size: 20,
+                  ),
                 ),
               ),
             ],
@@ -185,9 +196,33 @@ class _ProductDetailState extends State<ProductDetail> {
                         ),
                       ),
                       SizedBox(width: 10),
+                      BlocConsumer<AddtocartBloc, AddtocartState>(
+                          bloc: addtocartBloc,
+                          listener: (context, state) {
+                            if (state is CatchErrorAddToCartState) {
+                              Fluttertoast.showToast(msg: 'not add into cart');
+                            }
+                            if (state is AddToCartSucessState) {
+                              Fluttertoast.showToast(
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white,
+                                  msg: "product added into cart");
+                            }
+                          },
+                          builder: (context, state) {
+                            return Container();
+                          }),
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            addtocartBloc.add(AddTocartButtonClick(
+                                img: widget.img,
+                                name: widget.name,
+                                price: "60",
+                                size: "xl",
+                                color: imgurl[0],
+                                quantity: quantity));
+                          },
                           style: OutlinedButton.styleFrom(
                             padding: EdgeInsets.symmetric(vertical: 12),
                             side: BorderSide(color: Colors.red),
@@ -317,5 +352,25 @@ class _ProductDetailState extends State<ProductDetail> {
         )
       ],
     );
+  }
+
+  Future<void> _createDynamicLinkAndShare(String id, String productName) async {
+    final DynamicLinkParameters parameters = DynamicLinkParameters(
+      uriPrefix:
+          'https://mlpprajapati.page.link', // Firebase se generate kiya hua link
+      link: Uri.parse(
+          'https://yourwebsite.com/product?img=$id'), // App me open hone wala link
+      androidParameters: AndroidParameters(
+        packageName: 'com.example.ecommerce_app', // Aapki App ka package name
+        minimumVersion: 1, // Minimum required version
+      ),
+    );
+
+    final ShortDynamicLink dynamicUrl =
+        await FirebaseDynamicLinks.instance.buildShortLink(parameters);
+
+    String shareableLink = dynamicUrl.shortUrl.toString();
+
+    await Share.share('Check out this product: $productName\n$shareableLink');
   }
 }

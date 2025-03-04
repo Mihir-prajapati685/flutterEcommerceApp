@@ -22,9 +22,7 @@ class MainscreenBloc extends Bloc<MainscreenEvent, MainscreenState> {
         Uri.parse('https://fakestoreapi.com/products/'),
       );
       if (fetchProduct.statusCode == 200) {
-        print('yessdjsshsuhsudsdhsddddddd');
         final data = jsonDecode(fetchProduct.body);
-        print(data);
         emit(MainScreenLoadedSuccessfullyState(data));
       } else {
         emit(MainScreenErrorState("Failed to load products"));

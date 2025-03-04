@@ -1,8 +1,9 @@
 import 'package:ecommerce_app/Data/ProductCardData/WomencardData.dart';
 import 'package:ecommerce_app/Models/Product.dart';
 import 'package:ecommerce_app/presentation/ProductDetail/productdetail.dart';
+import 'package:ecommerce_app/presentation/Productcartscreen/filterproduct.dart';
+import 'package:ecommerce_app/presentation/Productcartscreen/sortedproduct.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class Womencards extends StatelessWidget {
   final String categoryid;
@@ -73,11 +74,24 @@ class Womencards extends StatelessWidget {
               children: [
                 Icon(Icons.filter_list),
                 SizedBox(width: 5),
-                Text("Filters"),
+                InkWell(
+                  child: Text("Filters"),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => FilterProduct()));
+                  },
+                ),
                 Spacer(),
                 Icon(Icons.sort),
                 SizedBox(width: 5),
-                Text("Price: Lowest to High"),
+                InkWell(
+                  onTap: () {
+                    showFilterBottomSheet(context);
+                  },
+                  child: Text("Price: Lowest to High"),
+                )
               ],
             ),
           ),
@@ -100,12 +114,14 @@ class Womencards extends StatelessWidget {
                     onTap: () {
                       final String img = filteredProducts[index].image;
                       final String name = filteredProducts[index].name;
+                      final String id = filteredProducts[index].id;
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => ProductDetail(
                                     img: img,
                                     name: name,
+                                    id: id,
                                   )));
                     },
                     child: Card(
