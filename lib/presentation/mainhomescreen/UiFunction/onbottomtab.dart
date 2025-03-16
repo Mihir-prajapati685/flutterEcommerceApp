@@ -1,6 +1,6 @@
 import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/bag/bag.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/card/cart.dart';
-import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/profile/profile.dart';
+import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/profile/profile_bloc_ui/profile.dart';
 import 'package:flutter/material.dart';
 
 onItemTapped(BuildContext context, int index) {

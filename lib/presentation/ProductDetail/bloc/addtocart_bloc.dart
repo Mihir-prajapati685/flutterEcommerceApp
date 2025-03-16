@@ -17,10 +17,18 @@ class AddtocartBloc extends Bloc<AddtocartEvent, AddtocartState> {
     try {
       CollectionReference collref =
           FirebaseFirestore.instance.collection('AddToCart');
-      if (collref == null) {
-        print('collref is empty');
+
+      // Check if email already exists
+      QuerySnapshot querySnapshotid =
+          await collref.where('id', isEqualTo: event.id).get();
+      QuerySnapshot querySnapshotname =
+          await collref.where('name', isEqualTo: event.name).get();
+      if (querySnapshotid.docs.isNotEmpty &&
+          querySnapshotname.docs.isNotEmpty) {
+        emit(AlreadyProductExistTocartState());
       } else {
         await collref.add({
+          'id': event.id,
           'img': event.img,
           'name': event.name,
           'price': event.price,

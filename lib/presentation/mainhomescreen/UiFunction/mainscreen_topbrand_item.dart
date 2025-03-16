@@ -8,204 +8,165 @@ class MainscreenTopbrandItem extends StatefulWidget {
 }
 
 class _MainscreenTopbrandItem extends State<MainscreenTopbrandItem> {
-  final int _hoveredIndex = -1;
-  bool isJensSelected = true; // Track which category is selected
+  final List<Map<String, String>> stories = [
+    {
+      'image':
+          'https://rukminim2.flixcart.com/image/850/1000/xif0q/jacket/t/c/z/l-1-no-jakt-denimslvless-mblue-urbano-fashion-original-imah6s9nevezgxvz.jpeg?q=90&crop=false',
+      'name': 'Diesel'
+    },
+    {
+      'image':
+          'https://www.jiomart.com/images/product/original/rvcspdzjaf/forgive-boot-cut-style-men-s-boys-denim-jeans-perfect-for-casual-wear-mid-blue-30-product-images-rvcspdzjaf-1-202212010814.jpg?im=Resize=(500,630)',
+      'name': 'Denim'
+    },
+    {
+      'image':
+          'https://i.pinimg.com/736x/c0/6e/2c/c06e2c9cecc4efaf87f00b66a251247d.jpg',
+      'name': 'Gucci'
+    },
+    {
+      'image':
+          'https://www.garderobeitaly.com/wp-content/uploads/2023/03/IMG_3697.jpg',
+      'name': 'Prada'
+    },
+    {
+      'image':
+          'https://www.azureofficial.pk/cdn/shop/files/Garnet-Majesty-_4_1024x1024.jpg?v=1731408849',
+      'name': 'Azure'
+    },
+  ];
+  final List<Map<String, String>> products = [
+    {
+      "image":
+          "https://www.azureofficial.pk/cdn/shop/files/Garnet-Majesty-_4_1024x1024.jpg?v=1731408849",
+      "title": "Human Face Print Casual",
+      "price": "\$55.90"
+    },
+    {
+      "image":
+          "https://www.garderobeitaly.com/wp-content/uploads/2023/03/IMG_3697.jpg",
+      "title": "Rainbow Floral Print Belted",
+      "price": "\$55.90"
+    },
+    {
+      "image":
+          "https://i.pinimg.com/736x/c0/6e/2c/c06e2c9cecc4efaf87f00b66a251247d.jpg",
+      "title": "Floral Print Puff Sleeve Midi",
+      "price": "\$55.90"
+    },
+    {
+      "image":
+          "https://www.jiomart.com/images/product/original/rvcspdzjaf/forgive-boot-cut-style-men-s-boys-denim-jeans-perfect-for-casual-wear-mid-blue-30-product-images-rvcspdzjaf-1-202212010814.jpg?im=Resize=(500,630)",
+      "title": "Solid V Neck Vacation Dress",
+      "price": "\$55.90"
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Top Brands',
-              style: GoogleFonts.titilliumWeb(
-                color: Colors.black87,
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              'View all',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
-            ),
-          ],
-        ),
-        SizedBox(height: 30),
-
-        // Category Buttons (Jens / Ladies)
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildCategoryButton("Jens", isJensSelected),
-            _buildCategoryButton("Ladies", !isJensSelected),
-          ],
-        ),
-        // Image Grid
-        isJensSelected
-            ? _imgGensCategory(_hoveredIndex)
-            : _imgladiesCategory(_hoveredIndex),
-      ],
-    );
-  }
-
-  Widget _buildCategoryButton(String text, bool isSelected) {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          isJensSelected = (text == "Jens");
-        });
-      },
-      child: Container(
-        height: 50,
-        width: 170,
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.red
-              : const Color.fromARGB(255, 245, 243, 243),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black, width: 1),
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: GoogleFonts.crimsonPro(
-              color: isSelected
-                  ? Colors.white
-                  : Colors.black, // Ensure text is visible
-              fontSize: 25,
+    return Column(children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Top Brands',
+            style: GoogleFonts.titilliumWeb(
+              color: Colors.black87,
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
             ),
           ),
+          Text(
+            'View all',
+            style: TextStyle(color: Colors.grey, fontSize: 15),
+          ),
+        ],
+      ),
+      SizedBox(height: 30),
+      SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: stories.map((story) {
+            return Column(
+              children: [
+                InkWell(
+                  onTap: () {},
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 8),
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: Colors.black,
+                          width: 1), // Instagram-like border
+                    ),
+                    child: ClipOval(
+                      child: Image.network(
+                        story['image']!,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  story['name']!,
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ],
+            );
+          }).toList(),
         ),
       ),
-    );
-  }
-
-  Widget _imgGensCategory(hoveredIndex) {
-    return Padding(
-      padding: EdgeInsets.only(top: 30),
-      child: Wrap(
-        direction: Axis.horizontal,
-        alignment: WrapAlignment.center,
-        spacing: 20,
-        runSpacing: 20,
-        children: List.generate(6, (index) {
-          return InkWell(
-            onTap: () {
-              setState(() {
-                hoveredIndex = (hoveredIndex == index) ? -1 : index;
-              });
-            },
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(25),
-                  child: Container(
-                    height: 250,
-                    width: 170,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: Colors.grey, width: 1),
-                    ),
-                    child: Image.network(
-                      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpE4L7KMYYwwJ2MIZQwm3U8j2_FyLMZEgx0w&s",
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-
-                // Animated White Overlay with Brand Name
-                AnimatedOpacity(
-                  duration: Duration(milliseconds: 300),
-                  opacity: hoveredIndex == index ? 1.0 : 0.0,
-                  child: Container(
-                    height: 50,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Brand ${index + 1}",
-                      style: GoogleFonts.titilliumWeb(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
+      Padding(
+        padding: EdgeInsets.only(top: 20, left: 8.0, right: 8.0),
+        child: GridView.builder(
+          shrinkWrap: true, // Important to prevent layout issues
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: products.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, // Two items per row
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.7, // Adjust for height
+          ),
+          itemBuilder: (context, index) {
+            return ProductCard(
+              imageUrl: products[index]["image"]!,
+              title: products[index]["title"]!,
+              price: products[index]["price"]!,
+            );
+          },
+        ),
       ),
-    );
+    ]);
   }
+}
 
-  Widget _imgladiesCategory(hoveredIndex) {
-    return Padding(
-      padding: EdgeInsets.only(top: 30),
-      child: Wrap(
-        direction: Axis.horizontal,
-        alignment: WrapAlignment.center,
-        spacing: 20,
-        runSpacing: 20,
-        children: List.generate(6, (index) {
-          return InkWell(
-            onTap: () {
-              setState(() {
-                hoveredIndex = (hoveredIndex == index) ? -1 : index;
-              });
-            },
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(25),
-                  child: Container(
-                    height: 250,
-                    width: 170,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: Colors.grey, width: 1),
-                    ),
-                    child: Image.network(
-                      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpE4L7KMYYwwJ2MIZQwm3U8j2_FyLMZEgx0w&s",
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-
-                // Animated White Overlay with Brand Name
-                AnimatedOpacity(
-                  duration: Duration(milliseconds: 300),
-                  opacity: hoveredIndex == index ? 1.0 : 0.0,
-                  child: Container(
-                    height: 50,
-                    width: 150,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      "Brand ${index + 1}",
-                      style: GoogleFonts.titilliumWeb(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
+class ProductCard extends StatelessWidget {
+  final String imageUrl, title, price;
+  ProductCard(
+      {required this.imageUrl, required this.title, required this.price});
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {},
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(imageUrl,
+                fit: BoxFit.cover, height: 180, width: double.infinity),
+          ),
+          SizedBox(height: 6),
+          Text(title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          Text(price, style: TextStyle(color: Colors.green, fontSize: 16)),
+        ],
       ),
     );
   }

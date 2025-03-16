@@ -1,3 +1,4 @@
+import 'package:ecommerce_app/presentation/Productcartscreen/categoryWishCard.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -52,7 +53,9 @@ class TopimgPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(25),
                 ),
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Navigator.push(context, MaterialPageRoute(builder: (context)=>)
+                  },
                   child: Text(
                     'Check',
                     style: TextStyle(color: Colors.white, fontSize: 18),

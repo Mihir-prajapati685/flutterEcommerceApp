@@ -67,10 +67,6 @@ class _MainScreenState extends State<MainScreenState> {
             icon: FaIcon(FontAwesomeIcons.cartPlus),
             label: "Cart",
           ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.userCircle),
-            label: "User",
-          ),
         ],
       ),
     );

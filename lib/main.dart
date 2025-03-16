@@ -41,6 +41,7 @@ class MyHomePageState extends State<MyHomePage> {
     User? user = FirebaseAuth.instance.currentUser;
     var sharedPref = await SharedPreferences.getInstance();
     bool? isLoggedIn = sharedPref.getBool('isLoggedIn');
+    print('current user is $user');
 
     if (user != null || isLoggedIn == true) {
       // User already logged in

@@ -4,6 +4,7 @@ part of 'addtocart_bloc.dart';
 sealed class AddtocartEvent {}
 
 class AddTocartButtonClick extends AddtocartEvent {
+  String id;
   String img;
   String name;
   String price;
@@ -12,7 +13,8 @@ class AddTocartButtonClick extends AddtocartEvent {
   int quantity;
 
   AddTocartButtonClick(
-      {required this.img,
+      {required this.id,
+      required this.img,
       required this.name,
       required this.price,
       required this.size,

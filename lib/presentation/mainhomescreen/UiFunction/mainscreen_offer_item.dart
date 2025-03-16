@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 class OfferScreen extends StatelessWidget {
   final List<String> offers = [
     'assets/images/offer1.png',
-    'assets/images/offer1.png',
-    'assets/images/offer1.png',
-    'assets/images/offer1.png',
+    'assets/images/offer2.png',
+    'assets/images/offer3.png',
+    'assets/images/offer4.png',
   ];
 
   @override

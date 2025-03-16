@@ -3,7 +3,8 @@ import 'package:ecommerce_app/presentation/mainhomescreen/bloc/mainscreen_bloc.d
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart'; // Import for RatingBarIndicator
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:http/http.dart' as http; // Import for RatingBarIndicator
 
 class MainscreenSaleItem extends StatelessWidget {
   @override
@@ -29,7 +30,7 @@ class MainscreenSaleItem extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) {
-            final newbloc = MainscreenBloc();
+            final newbloc = MainscreenBloc(client: http.Client());
             newbloc.add(MainScreenInitialEvent());
             return newbloc;
           },

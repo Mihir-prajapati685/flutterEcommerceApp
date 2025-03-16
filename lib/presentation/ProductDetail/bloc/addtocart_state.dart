@@ -10,3 +10,5 @@ abstract class AddTocartActionState extends AddtocartState {}
 class AddToCartSucessState extends AddTocartActionState {}
 
 class CatchErrorAddToCartState extends AddTocartActionState {}
+
+class AlreadyProductExistTocartState extends AddTocartActionState {}

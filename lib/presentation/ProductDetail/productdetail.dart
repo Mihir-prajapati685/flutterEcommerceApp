@@ -1,4 +1,5 @@
 import 'package:ecommerce_app/presentation/ProductDetail/bloc/addtocart_bloc.dart';
+import 'package:ecommerce_app/presentation/ProdutBuypage/oredersummary.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -184,7 +185,13 @@ class _ProductDetailState extends State<ProductDetail> {
                     children: [
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        OrderSummaryScreen()));
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             padding: EdgeInsets.symmetric(vertical: 12),
@@ -208,6 +215,10 @@ class _ProductDetailState extends State<ProductDetail> {
                                   textColor: Colors.white,
                                   msg: "product added into cart");
                             }
+                            if (state is AlreadyProductExistTocartState) {
+                              Fluttertoast.showToast(
+                                  msg: 'Already Exist in cart');
+                            }
                           },
                           builder: (context, state) {
                             return Container();
@@ -216,6 +227,7 @@ class _ProductDetailState extends State<ProductDetail> {
                         child: OutlinedButton(
                           onPressed: () {
                             addtocartBloc.add(AddTocartButtonClick(
+                                id: widget.id.toString(),
                                 img: widget.img,
                                 name: widget.name,
                                 price: "60",
