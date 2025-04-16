@@ -112,4 +112,5 @@ class LoginBlocBloc extends Bloc<LoginBlocEvent, LoginBlocState> {
       emit(SignInErrorState(error: error.toString())); // Emit error state
     }
   }
+  
 }
