@@ -115,14 +115,14 @@ class Womencards extends StatelessWidget {
                       final String img = filteredProducts[index].image;
                       final String name = filteredProducts[index].name;
                       final String id = filteredProducts[index].id;
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ProductDetail(
-                                    img: img,
-                                    name: name,
-                                    id: id,
-                                  )));
+                      // Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //         builder: (context) => ProductDetail(
+                      //               img: img,
+                      //               name: name,
+                      //               id: id,
+                      //             )));
                     },
                     child: Card(
                       shape: RoundedRectangleBorder(

@@ -63,6 +63,7 @@ class _Cart extends State<Cart> {
                       },
                       builder: (context, state) {
                         if (state is FirebasedatabaseEmptyState) {
+                          
                           return Center(
                               child: Padding(
                             padding: const EdgeInsets.all(20.0),
@@ -151,7 +152,8 @@ class _Cart extends State<Cart> {
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                             child: Image.network(
-                                              state.cartdata[index]['img'],
+                                              state.cartdata[index]['img'] ??
+                                                  'https://via.placeholder.com/150',
                                               width: 200,
                                               height: 300,
                                               fit: BoxFit.cover,
@@ -175,9 +177,11 @@ class _Cart extends State<Cart> {
                                                                       ['name']
                                                                   .length >
                                                               7
-                                                          ? '${state.cartdata[index]['name'].substring(0, 7)}...' // Pehle 7 char + "..."
+                                                          ? '${state.cartdata[index]['name'].substring(0, 7) ?? 'unknow'}...' // Pehle 7 char + "..."
                                                           : state.cartdata[
-                                                              index]['name'],
+                                                                      index]
+                                                                  ['name'] ??
+                                                              'No name',
                                                       overflow:
                                                           TextOverflow.ellipsis,
                                                       softWrap: true,
@@ -201,7 +205,7 @@ class _Cart extends State<Cart> {
                                                   ],
                                                 ),
                                                 Text(
-                                                  "€${state.cartdata[index]['price']}",
+                                                  "€${state.cartdata[index]['price'] ?? '0'}",
                                                   style: TextStyle(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.bold,
@@ -220,7 +224,9 @@ class _Cart extends State<Cart> {
                                                 ),
                                                 SizedBox(height: 10),
                                                 Text(
-                                                  state.cartdata[index]['size'],
+                                                  state.cartdata[index]
+                                                          ['size'] ??
+                                                      'size not selected',
                                                   style: TextStyle(
                                                       color: Colors.grey),
                                                 ),

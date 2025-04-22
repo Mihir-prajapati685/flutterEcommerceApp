@@ -18,7 +18,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     try {
       final FirebaseFirestore _firestore = FirebaseFirestore.instance;
       QuerySnapshot querySnapshot =
-          await _firestore.collection('AddToCart').get();
+          await _firestore.collection('addtocart').get();
       if (querySnapshot.docs.isEmpty) {
         emit(FirebasedatabaseEmptyState());
       } else {

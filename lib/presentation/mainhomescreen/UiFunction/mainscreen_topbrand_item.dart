@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -9,58 +10,40 @@ class MainscreenTopbrandItem extends StatefulWidget {
 
 class _MainscreenTopbrandItem extends State<MainscreenTopbrandItem> {
   final List<Map<String, String>> stories = [
-    {
-      'image':
-          'https://rukminim2.flixcart.com/image/850/1000/xif0q/jacket/t/c/z/l-1-no-jakt-denimslvless-mblue-urbano-fashion-original-imah6s9nevezgxvz.jpeg?q=90&crop=false',
-      'name': 'Diesel'
-    },
-    {
-      'image':
-          'https://www.jiomart.com/images/product/original/rvcspdzjaf/forgive-boot-cut-style-men-s-boys-denim-jeans-perfect-for-casual-wear-mid-blue-30-product-images-rvcspdzjaf-1-202212010814.jpg?im=Resize=(500,630)',
-      'name': 'Denim'
-    },
-    {
-      'image':
-          'https://i.pinimg.com/736x/c0/6e/2c/c06e2c9cecc4efaf87f00b66a251247d.jpg',
-      'name': 'Gucci'
-    },
-    {
-      'image':
-          'https://www.garderobeitaly.com/wp-content/uploads/2023/03/IMG_3697.jpg',
-      'name': 'Prada'
-    },
-    {
-      'image':
-          'https://www.azureofficial.pk/cdn/shop/files/Garnet-Majesty-_4_1024x1024.jpg?v=1731408849',
-      'name': 'Azure'
-    },
+    {'image': 'https://example.com/image1.jpg', 'name': 'Diesel'},
+    {'image': 'https://example.com/image2.jpg', 'name': 'Denim'},
+    {'image': 'https://example.com/image3.jpg', 'name': 'Gucci'},
   ];
-  final List<Map<String, String>> products = [
-    {
-      "image":
-          "https://www.azureofficial.pk/cdn/shop/files/Garnet-Majesty-_4_1024x1024.jpg?v=1731408849",
-      "title": "Human Face Print Casual",
-      "price": "\$55.90"
-    },
-    {
-      "image":
-          "https://www.garderobeitaly.com/wp-content/uploads/2023/03/IMG_3697.jpg",
-      "title": "Rainbow Floral Print Belted",
-      "price": "\$55.90"
-    },
-    {
-      "image":
-          "https://i.pinimg.com/736x/c0/6e/2c/c06e2c9cecc4efaf87f00b66a251247d.jpg",
-      "title": "Floral Print Puff Sleeve Midi",
-      "price": "\$55.90"
-    },
-    {
-      "image":
-          "https://www.jiomart.com/images/product/original/rvcspdzjaf/forgive-boot-cut-style-men-s-boys-denim-jeans-perfect-for-casual-wear-mid-blue-30-product-images-rvcspdzjaf-1-202212010814.jpg?im=Resize=(500,630)",
-      "title": "Solid V Neck Vacation Dress",
-      "price": "\$55.90"
-    },
-  ];
+
+  List<Map<String, String>> products = [];
+  String selectedBrand = 'Diesel'; // default brand
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProductsForBrand(selectedBrand);
+  }
+
+  Future<void> fetchProductsForBrand(String brandName) async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('products')
+        .where('brand', isEqualTo: brandName)
+        .get();
+
+    final List<Map<String, String>> loadedProducts =
+        querySnapshot.docs.map((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return {
+        'image': data['image']?.toString() ?? '',
+        'title': data['title']?.toString() ?? '',
+        'price': data['price']?.toString() ?? '',
+      };
+    }).toList();
+    setState(() {
+      selectedBrand = brandName;
+      products = loadedProducts;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,21 +73,24 @@ class _MainscreenTopbrandItem extends State<MainscreenTopbrandItem> {
             return Column(
               children: [
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    fetchProductsForBrand(story['name']!);
+                  },
                   child: Container(
                     margin: EdgeInsets.symmetric(horizontal: 8),
                     width: 70,
                     height: 70,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(
-                          color: Colors.black,
-                          width: 1), // Instagram-like border
+                      border: Border.all(color: Colors.black, width: 1),
                     ),
                     child: ClipOval(
                       child: Image.network(
                         story['image']!,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.error, color: Colors.red);
+                        },
                       ),
                     ),
                   ),
@@ -121,29 +107,30 @@ class _MainscreenTopbrandItem extends State<MainscreenTopbrandItem> {
       ),
       Padding(
         padding: EdgeInsets.only(top: 20, left: 8.0, right: 8.0),
-        child: GridView.builder(
-          shrinkWrap: true, // Important to prevent layout issues
-          physics: NeverScrollableScrollPhysics(),
-          itemCount: products.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // Two items per row
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 0.7, // Adjust for height
-          ),
-          itemBuilder: (context, index) {
-            return ProductCard(
-              imageUrl: products[index]["image"]!,
-              title: products[index]["title"]!,
-              price: products[index]["price"]!,
-            );
-          },
-        ),
+        child: products.isEmpty
+            ? Text('No products available for $selectedBrand')
+            : GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: products.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  childAspectRatio: 0.7,
+                ),
+                itemBuilder: (context, index) {
+                  return ProductCard(
+                    imageUrl: products[index]["image"]!,
+                    title: products[index]["title"]!,
+                    price: products[index]["price"]!,
+                  );
+                },
+              ),
       ),
     ]);
   }
 }
-
 class ProductCard extends StatelessWidget {
   final String imageUrl, title, price;
   ProductCard(

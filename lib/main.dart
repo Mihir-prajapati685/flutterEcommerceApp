@@ -9,15 +9,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-      options: const FirebaseOptions(
-    apiKey: "AIza....",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abc123def456",
-  ));
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase only if it's not already initialized
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
   runApp(
     BlocProvider(
       create: (context) => LoginBlocBloc(),
@@ -39,6 +36,7 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
   static const KEYFORM = 'LOGIN';
+
   @override
   void initState() {
     super.initState();
@@ -49,13 +47,15 @@ class MyHomePageState extends State<MyHomePage> {
     User? user = FirebaseAuth.instance.currentUser;
     var sharedPref = await SharedPreferences.getInstance();
     bool? isLoggedIn = sharedPref.getBool('isLoggedIn');
-    print('current user is $user');
+    print('Current user: $user');
 
     if (user != null || isLoggedIn == true) {
       // User already logged in
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MainScreenState()),
+        MaterialPageRoute(
+            builder: (context) =>
+                MainScreenState()), // Make sure to use MainScreen directly
       );
     } else {
       // User not logged in
@@ -66,6 +66,7 @@ class MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.amber,

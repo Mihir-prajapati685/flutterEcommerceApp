@@ -1,388 +1,315 @@
-import 'package:ecommerce_app/presentation/ProductDetail/bloc/addtocart_bloc.dart';
-import 'package:ecommerce_app/presentation/ProdutBuypage/oredersummary.dart';
-import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:share_plus/share_plus.dart';
 
 class ProductDetail extends StatefulWidget {
-  final String img;
-  final String name;
-  final String id;
+  final String productId;
 
-  ProductDetail({required this.img, required this.name, required this.id});
+  const ProductDetail({required this.productId});
 
   @override
-  _ProductDetailState createState() => _ProductDetailState();
+  State<ProductDetail> createState() => _ProductDetailState();
 }
 
 class _ProductDetailState extends State<ProductDetail> {
-  int quantity = 1;
-  List<String> imgurl = [
-    "https://images.bewakoof.com/web/Blouson---Designer-girls-top-design---Bewakoof-Blog.jpg",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOtDN9v-U3McxsiaJmdmLj0rW7yA1RHDdh2iuxo9buipWtnJhO5q5Pfv_X9c5ZM7agXmY&usqp=CAU",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWy48dJqmmZ5mQaLfJ_OzedAisYj8GF_Nf7X-cTu27f8nIC7rDOGPDH4OY_pw2U5Xzm-s&usqp=CAU"
-  ]; // State for quantity selection
-  final AddtocartBloc addtocartBloc = AddtocartBloc();
+  Map<String, dynamic>? productData;
+  String selectedSize = "Size";
+  String selectedColor = "Black";
+  bool isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProductData();
+  }
+
+  Future<void> fetchProductData() async {
+    try {
+      DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+          .collection('productdetail')
+          .doc(widget.productId)
+          .get();
+
+      if (documentSnapshot.exists) {
+        setState(() {
+          productData = documentSnapshot.data() as Map<String, dynamic>;
+        });
+      } else {
+        print('Document does not exist');
+      }
+    } catch (e) {
+      print('Error fetching product: $e');
+    }
+  }
+
+  Future<void> addToFavourites() async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('favourite')
+          .doc(widget.productId)
+          .set(productData!);
+      print("Product added to favourites");
+      Fluttertoast.showToast(msg: "add successfully Favourites");
+    } catch (e) {
+      print("Error adding to favourites: $e");
+    }
+  }
+
+  Future<void> addTocartdata() async {
+    if (selectedSize == "Size") {
+      Fluttertoast.showToast(
+          msg: "Please select a size before adding to cart.");
+      return;
+    }
+
+    try {
+      final cartData = {
+        ...productData!,
+        'selectedSize': selectedSize,
+        'selectedColor': selectedColor,
+        'addedAt': Timestamp.now(), // optional: to track when it was added
+      };
+
+      await FirebaseFirestore.instance
+          .collection('addtocart')
+          .doc(widget.productId)
+          .set(cartData);
+
+      print("Product added to cart");
+      Fluttertoast.showToast(msg: "Product successfully added to cart");
+    } catch (e) {
+      print("Error adding to cart: $e");
+      Fluttertoast.showToast(msg: "Error adding to cart");
+    }
+  }
+
+  void _showSizeModal() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Select size',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                children: ['XS', 'S', 'M', 'L', 'XL'].map((size) {
+                  final isSelected = selectedSize == size;
+                  return ChoiceChip(
+                    label: Text(size),
+                    selected: isSelected,
+                    onSelected: (_) {
+                      setState(() {
+                        selectedSize = size;
+                      });
+                      Navigator.pop(context);
+                    },
+                    selectedColor: Colors.deepPurple,
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showColorModal() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Select color',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                children: ['Black', 'Red', 'Blue', 'Green'].map((color) {
+                  final isSelected = selectedColor == color;
+                  return ChoiceChip(
+                    label: Text(color),
+                    selected: isSelected,
+                    onSelected: (_) {
+                      setState(() {
+                        selectedColor = color;
+                      });
+                      Navigator.pop(context);
+                    },
+                    selectedColor: Colors.deepPurple,
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRatingStars(int count) {
+    return Row(
+      children: List.generate(5, (index) {
+        return Icon(
+          index < count ? Icons.star : Icons.star_border,
+          color: Colors.orange,
+          size: 18,
+        );
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 500, // Image height
-            floating: false,
-            pinned: true,
-            actions: [
-              Padding(
-                padding: EdgeInsets.only(right: 20),
-                child: IconButton(
-                  onPressed: () async {
-                    await _createDynamicLinkAndShare(widget.id, widget.name);
-                  },
-                  icon: Icon(
-                    Icons.share,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Image.network(
-                widget.img, // Change with your product image
-                fit: BoxFit.cover,
-              ),
+      appBar: AppBar(
+        title: const Text('Product Detail'),
+        backgroundColor: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: () {
+              setState(() {
+                isFavorite = !isFavorite;
+                if (isFavorite && productData != null) {
+                  addToFavourites();
+                }
+              });
+            },
+            icon: Icon(
+              Icons.favorite,
+              color: isFavorite ? Colors.red : Colors.grey,
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(16),
+          )
+        ],
+      ),
+      body: productData == null
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Product Title
-                  Text(
-                    widget.name,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-
-                  // Price
-                  Text(
-                    "\$ ${60.00 * quantity}",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 5),
-
-                  // SKU & Availability
-                  Row(
-                    children: [
-                      Text(
-                        "SKU: INS16-1",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                  Center(
+                    child: Container(
+                      height: 300,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        image: DecorationImage(
+                          image: NetworkImage(productData!['image']),
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      SizedBox(width: 10),
-                      Text(
-                        "Availability: In stock (999405)",
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-
-                  // Description
-                  Container(
-                    width: double.infinity,
-                    height: 30,
-                    color: const Color.fromARGB(255, 228, 246, 255),
-                    child: Text(
-                      "Modern T-shirt design",
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.black87,
-                          fontWeight: FontWeight.bold),
                     ),
                   ),
-                  SizedBox(height: 20),
-
-                  // Size Selector
+                  const SizedBox(height: 24),
                   Text(
-                    "Size",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    productData!['title'],
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: ["L", "M", "S", "XL"]
-                        .map((size) => Padding(
-                              padding: EdgeInsets.only(right: 10),
-                              child: ChoiceChip(
-                                label: Text(size),
-                                selected: size == "XL", // Example selection
-                                selectedColor: Colors.red,
-                                backgroundColor: Colors.white,
-                                labelStyle: TextStyle(
-                                    color: size == "XL"
-                                        ? Colors.white
-                                        : Colors.black),
-                                onSelected: (selected) {},
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                  SizedBox(height: 20),
-
-                  // Color Options
+                  const SizedBox(height: 8),
                   Text(
-                    "Color",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    "Short black dress",
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                    ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      _colorOption(imgurl[0]),
-                      _colorOption(imgurl[1]),
-                      _colorOption(imgurl[2]),
+                      _buildRatingStars(4),
+                      const SizedBox(width: 8),
+                      const Text("(10)"),
                     ],
                   ),
-                  SizedBox(height: 20),
-
-                  // Quantity Selector
-                  Text(
-                    "Select the quantity:",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 16),
                   Row(
                     children: [
-                      _quantityButton(Icons.remove, () {
-                        setState(() {
-                          if (quantity > 1) quantity--;
-                        });
-                      }),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          "$quantity",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                      _quantityButton(Icons.add, () {
-                        setState(() {
-                          quantity++;
-                        });
-                      }),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-
-                  // Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        OrderSummaryScreen()));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          child: Text(
-                            "Buy Now",
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      BlocConsumer<AddtocartBloc, AddtocartState>(
-                          bloc: addtocartBloc,
-                          listener: (context, state) {
-                            if (state is CatchErrorAddToCartState) {
-                              Fluttertoast.showToast(msg: 'not add into cart');
-                            }
-                            if (state is AddToCartSucessState) {
-                              Fluttertoast.showToast(
-                                  backgroundColor: Colors.red,
-                                  textColor: Colors.white,
-                                  msg: "product added into cart");
-                            }
-                            if (state is AlreadyProductExistTocartState) {
-                              Fluttertoast.showToast(
-                                  msg: 'Already Exist in cart');
-                            }
-                          },
-                          builder: (context, state) {
-                            return Container();
-                          }),
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () {
-                            addtocartBloc.add(AddTocartButtonClick(
-                                id: widget.id.toString(),
-                                img: widget.img,
-                                name: widget.name,
-                                price: "60",
-                                size: "xl",
-                                color: imgurl[0],
-                                quantity: quantity));
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: Colors.red),
-                          ),
-                          child: Text(
-                            "ADD TO CART",
-                            style: TextStyle(fontSize: 16, color: Colors.red),
-                          ),
+                          onPressed: _showSizeModal,
+                          child: Text(selectedSize),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: _showColorModal,
+                          child: Text(selectedColor),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 20),
-
-                  // Description Section
-                  ExpansionTile(
-                    title: Text(
-                      "DESCRIPTION",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 20),
+                  Text(
+                    "₹${productData!['price']}",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.w500,
                     ),
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _descriptionItem("Soft-touch jersey"),
-                            _descriptionItem("Crew neck"),
-                            _descriptionItem("Chest print"),
-                            _descriptionItem("Regular fit - true to size"),
-                            _descriptionItem("Machine wash"),
-                            _descriptionItem("60% Cotton, 40% Polyester"),
-                          ],
-                        ),
-                      )
-                    ],
                   ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  ExpansionTile(
-                    title: Text(
-                      "ADDITIONAL INFORMATION",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 16),
+                  Text(
+                    productData!['description'],
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black54,
                     ),
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            __extraInformation("Size", "L,M,s,XL"),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            __extraInformation("Image", "black,blue,red"),
-                          ],
-                        ),
-                      )
-                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    onPressed: () {
+                      addTocartdata();
+                    },
+                    child: const Center(
+                      child: Text(
+                        "ADD TO CART",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
     );
-  }
-
-  // Widget for color options
-  Widget _colorOption(String imageUrl) {
-    return Padding(
-      padding: EdgeInsets.only(right: 10),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Image.network(
-          imageUrl,
-          width: 50,
-          height: 50,
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
-  }
-
-  // Widget for quantity buttons
-  Widget _quantityButton(IconData icon, VoidCallback onPressed) {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.red),
-      ),
-      child: IconButton(
-        icon: Icon(icon, color: Colors.red),
-        onPressed: onPressed,
-      ),
-    );
-  }
-
-  // Description item
-  Widget _descriptionItem(String text) {
-    return Row(
-      children: [
-        Icon(Icons.check, color: Colors.red, size: 18),
-        SizedBox(width: 8),
-        Text(text, style: TextStyle(fontSize: 14)),
-      ],
-    );
-  }
-
-  Widget __extraInformation(String text, String tex1) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        Text(
-          text,
-          style: TextStyle(fontSize: 17),
-        ),
-        SizedBox(
-          width: 50,
-        ),
-        Text(
-          tex1,
-          style: TextStyle(fontSize: 17),
-        )
-      ],
-    );
-  }
-
-  Future<void> _createDynamicLinkAndShare(String id, String productName) async {
-    final DynamicLinkParameters parameters = DynamicLinkParameters(
-      uriPrefix:
-          'https://mlpprajapati.page.link', // Firebase se generate kiya hua link
-      link: Uri.parse(
-          'https://yourwebsite.com/product?img=$id'), // App me open hone wala link
-      androidParameters: AndroidParameters(
-        packageName: 'com.example.ecommerce_app', // Aapki App ka package name
-        minimumVersion: 1, // Minimum required version
-      ),
-    );
-
-    final ShortDynamicLink dynamicUrl =
-        await FirebaseDynamicLinks.instance.buildShortLink(parameters);
-
-    String shareableLink = dynamicUrl.shortUrl.toString();
-
-    await Share.share('Check out this product: $productName\n$shareableLink');
   }
 }

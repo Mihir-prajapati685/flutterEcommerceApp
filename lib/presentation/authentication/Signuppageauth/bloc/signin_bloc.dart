@@ -41,14 +41,37 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
         emit(AlreadyEmailExistState()); // Email already exists
       } else {
         try {
-          await collref.add({
-            'username': event.username,
-            'email': event.email,
-            'password': event.password,
-          });
-          emit(SuccessfullSignInState()); // Successfully added to Firestore
+          // 🔐 Create user in Firebase Auth
+          UserCredential userCredential =
+              await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: event.email,
+            password: event.password,
+          );
+
+          User? user = userCredential.user;
+
+          // ✅ Send email verification
+          if (user != null && !user.emailVerified) {
+            await user.sendEmailVerification();
+
+            // 💾 Save user info to Firestore only after creating account
+            await collref.add({
+              'username': event.username,
+              'email': event.email,
+              'password': event.password,
+              'uid': user.uid,
+            });
+
+            emit(SuccessfullSignInState()); // You can handle navigation in UI
+          }
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'email-already-in-use') {
+            emit(AlreadyEmailExistState());
+          } else {
+            emit(SignInErrorState(error: e.message ?? "Unknown error"));
+          }
         } catch (e) {
-          emit(SignInErrorState(error: e.toString())); // Handle errors
+          emit(SignInErrorState(error: e.toString()));
         }
       }
     }

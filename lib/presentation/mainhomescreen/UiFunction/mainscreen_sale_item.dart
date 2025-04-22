@@ -59,14 +59,14 @@ class MainscreenSaleItem extends StatelessWidget {
                           children: [
                             InkWell(
                               onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ProductDetail(
-                                              img: product['image'],
-                                              name: product['title'],
-                                              id: product['id'].toString(),
-                                            )));
+                                // Navigator.push(
+                                //     context,
+                                //     MaterialPageRoute(
+                                //         builder: (context) => ProductDetail(
+                                //               img: product['image'],
+                                //               name: product['title'],
+                                //               id: product['id'].toString(),
+                                //             )));
                               },
                               child: Stack(
                                 children: [

@@ -50,7 +50,7 @@ class _Sign_up extends State<Sign_up> {
               } else if (state is AlreadyEmailExistState) {
                 Fluttertoast.showToast(msg: 'already email exist');
               } else if (state is SignInErrorState) {
-                Fluttertoast.showToast(msg: "dhfdfhdfuh");
+                Fluttertoast.showToast(msg: "password must be 6 characters");
               } else if (state is AtTheRateNotContainState) {
                 attherateerror = "Require @ in Email";
                 errorvalue = false;
