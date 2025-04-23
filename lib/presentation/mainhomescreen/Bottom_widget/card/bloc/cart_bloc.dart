@@ -25,6 +25,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         List<Map<String, dynamic>> data = querySnapshot.docs
             .map((doc) => doc.data() as Map<String, dynamic>)
             .toList();
+
         emit(CartdataFetchSucessfullState(data));
       }
     } catch (e) {
@@ -35,15 +36,27 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   FutureOr<void> clickedRemoveProductEvent(
       ClickedRemoveProductEvent event, Emitter<CartState> emit) async {
     try {
-      var collection = FirebaseFirestore.instance.collection('AddToCart');
+      var collection = FirebaseFirestore.instance.collection('addtocart');
+
+      // Fetch the product by id to be deleted from Firestore
       var snapshot =
           await collection.where('id', isEqualTo: event.productId).get();
-      for (var doc in snapshot.docs) {
-        await doc.reference.delete(); // Delete document by reference
+
+      if (snapshot.docs.isNotEmpty) {
+        // Delete the document in Firestore
+        for (var doc in snapshot.docs) {
+          await doc.reference.delete();
+        }
+
+        // Emit success state if product is deleted successfully
+        emit(ProductDeleteSucessState()); // Send the id of the deleted product
+      } else {
+        // If no product is found with the given ID
+        emit(ProductDeleteErrorState());
       }
-      emit(ProductDeleteSucessState());
     } catch (e) {
-      emit(ProdutDeleteErrorState());
+      // Handle any errors during the product removal
+      emit(ProductDeleteErrorState());
     }
   }
 }

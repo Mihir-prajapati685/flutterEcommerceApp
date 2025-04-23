@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app/presentation/ProductDetail/productdetail.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/bloc/mainscreen_bloc.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,20 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:http/http.dart' as http; // Import for RatingBarIndicator
 
 class MainscreenSaleItem extends StatelessWidget {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<String?> _storeProductInFirestore(Map<String, dynamic> product) async {
+    try {
+      final docRef = await _firestore.collection('productdetail').add(product);
+      final productId = docRef.id;
+      print("Added successfully: $productId");
+      return productId;
+    } catch (e) {
+      print("Error storing product in Firestore: $e");
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -58,15 +73,19 @@ class MainscreenSaleItem extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             InkWell(
-                              onTap: () {
-                                // Navigator.push(
-                                //     context,
-                                //     MaterialPageRoute(
-                                //         builder: (context) => ProductDetail(
-                                //               img: product['image'],
-                                //               name: product['title'],
-                                //               id: product['id'].toString(),
-                                //             )));
+                              onTap: () async {
+                                final productId =
+                                    await _storeProductInFirestore(product);
+                                if (productId != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProductDetail(
+                                        productId: productId,
+                                      ),
+                                    ),
+                                  );
+                                }
                               },
                               child: Stack(
                                 children: [

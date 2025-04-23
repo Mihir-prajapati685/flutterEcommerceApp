@@ -19,3 +19,6 @@ class ProductDeleteSucessState extends CartActionState {}
 class ProdutDeleteErrorState extends CartActionState {}
 
 class FirebasedatabaseEmptyState extends CartActionState {}
+
+class ProductDeleteErrorState extends CartActionState {}
+

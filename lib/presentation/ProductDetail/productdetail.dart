@@ -67,6 +67,7 @@ class _ProductDetailState extends State<ProductDetail> {
         ...productData!,
         'selectedSize': selectedSize,
         'selectedColor': selectedColor,
+        'id': productData!['id'].toString(),
         'addedAt': Timestamp.now(), // optional: to track when it was added
       };
 

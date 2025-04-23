@@ -63,7 +63,6 @@ class _Cart extends State<Cart> {
                       },
                       builder: (context, state) {
                         if (state is FirebasedatabaseEmptyState) {
-                          
                           return Center(
                               child: Padding(
                             padding: const EdgeInsets.all(20.0),
@@ -128,6 +127,22 @@ class _Cart extends State<Cart> {
                                 physics: BouncingScrollPhysics(),
                                 itemCount: state.cartdata.length,
                                 itemBuilder: (context, index) {
+                                  final item = state.cartdata[index];
+                                  final String name =
+                                      (item['title'] ?? 'No name').toString();
+                                  final String imageUrl =
+                                      (item['image'] ?? '').toString();
+                                  final String price =
+                                      (item['price'] ?? '0').toString();
+                                  final String size = (item['selectedSize'] ??
+                                          'size not selected')
+                                      .toString();
+                                  final String color = (item['selectedColor'] ??
+                                          'size not selected')
+                                      .toString();
+                                  final String id =
+                                      (item['id'] ?? 'no id').toString();
+
                                   return Padding(
                                     padding: EdgeInsets.all(10),
                                     child: Container(
@@ -148,15 +163,29 @@ class _Cart extends State<Cart> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            child: Image.network(
-                                              state.cartdata[index]['img'] ??
-                                                  'https://via.placeholder.com/150',
-                                              width: 200,
-                                              height: 300,
-                                              fit: BoxFit.cover,
+                                          Flexible(
+                                            flex: 1,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              child: Image.network(
+                                                (imageUrl != null &&
+                                                        imageUrl.isNotEmpty)
+                                                    ? imageUrl
+                                                    : 'https://via.placeholder.com/150',
+                                                width: 200,
+                                                height: 300,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return Image.network(
+                                                    'https://via.placeholder.com/150',
+                                                    width: 200,
+                                                    height: 300,
+                                                    fit: BoxFit.cover,
+                                                  );
+                                                },
+                                              ),
                                             ),
                                           ),
                                           SizedBox(width: 20),
@@ -171,25 +200,15 @@ class _Cart extends State<Cart> {
                                                           .spaceBetween,
                                                   children: [
                                                     Text(
-                                                      state
-                                                                  .cartdata[
-                                                                      index]
-                                                                      ['name']
-                                                                  .length >
-                                                              7
-                                                          ? '${state.cartdata[index]['name'].substring(0, 7) ?? 'unknow'}...' // Pehle 7 char + "..."
-                                                          : state.cartdata[
-                                                                      index]
-                                                                  ['name'] ??
-                                                              'No name',
+                                                      name.length > 7
+                                                          ? '${name.substring(0, 7)}...'
+                                                          : name,
                                                       overflow:
                                                           TextOverflow.ellipsis,
-                                                      softWrap: true,
                                                       style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
                                                     IconButton(
                                                       icon: Icon(Icons.close,
@@ -197,20 +216,18 @@ class _Cart extends State<Cart> {
                                                       onPressed: () {
                                                         cartBloc.add(
                                                             ClickedRemoveProductEvent(
-                                                                state.cartdata[
-                                                                        index]
-                                                                    ['id']));
+                                                                id));
                                                       },
                                                     ),
                                                   ],
                                                 ),
                                                 Text(
-                                                  "€${state.cartdata[index]['price'] ?? '0'}",
+                                                  "€$price",
                                                   style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.orange,
-                                                  ),
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.orange),
                                                 ),
                                                 RatingBarIndicator(
                                                   rating: 4.5,
@@ -224,15 +241,16 @@ class _Cart extends State<Cart> {
                                                 ),
                                                 SizedBox(height: 10),
                                                 Text(
-                                                  state.cartdata[index]
-                                                          ['size'] ??
-                                                      'size not selected',
+                                                  "Size : ${size}",
                                                   style: TextStyle(
                                                       color: Colors.grey),
                                                 ),
-                                                Text("Color: Orange",
-                                                    style: TextStyle(
-                                                        color: Colors.grey)),
+                                                SizedBox(height: 10),
+                                                Text(
+                                                  "Color : ${color}",
+                                                  style: TextStyle(
+                                                      color: Colors.grey),
+                                                ),
                                                 SizedBox(height: 20),
                                                 Row(
                                                   children: [
