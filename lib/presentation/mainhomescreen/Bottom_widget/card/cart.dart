@@ -356,8 +356,8 @@ class _Cart extends State<Cart> {
                                                                 'selectedSize'],
                                                             'selectedColor': item[
                                                                 'selectedColor'],
-                                                            'quantity': item[
-                                                                'quantity'], // optional if available
+                                                            'quantity':
+                                                                1, // optional if available
                                                             'timestamp':
                                                                 Timestamp.now()
                                                           };

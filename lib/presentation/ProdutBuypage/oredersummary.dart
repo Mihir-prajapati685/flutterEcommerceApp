@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app/presentation/ProdutBuypage/addresschange.dart';
+import 'package:ecommerce_app/presentation/mainhomescreen/UiFunction/receipt.dart';
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
@@ -14,13 +15,15 @@ class Oredersummary extends StatefulWidget {
 
 class OrderSummaryScreen extends State<Oredersummary> {
   Map<String, dynamic>? productData;
-  @override
   var _razorpay = Razorpay();
 
+  @override
   void dispose() {
     _razorpay.clear();
+    super.dispose();
   }
 
+  @override
   void initState() {
     super.initState();
     _fetchProductData();
@@ -30,15 +33,17 @@ class OrderSummaryScreen extends State<Oredersummary> {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
-    // Do something when payment succeeds
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => ReceiptPage()));
+    // Handle success
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    // Do something when payment fails
+    // Handle error
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
-    // Do something when an external wallet is selected
+    // Handle wallet
   }
 
   Future<void> _fetchProductData() async {
@@ -51,9 +56,9 @@ class OrderSummaryScreen extends State<Oredersummary> {
       setState(() {
         productData = snapshot.data();
       });
-      print("data fetch sucessfully");
+      print("data fetch successfully");
     } else {
-      print("nai aave tarathi thay e kari le");
+      print("Document does not exist");
     }
   }
 
@@ -73,7 +78,6 @@ class OrderSummaryScreen extends State<Oredersummary> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Step Indicator
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -83,28 +87,14 @@ class OrderSummaryScreen extends State<Oredersummary> {
               ],
             ),
             SizedBox(height: 10),
-
-            // Delivery Details
             _deliveryDetails(context),
-
             SizedBox(height: 15),
-
-            // Product Details
             _productDetails(),
-
             SizedBox(height: 15),
-
-            // VIP Membership
             _vipMembership(),
-
             SizedBox(height: 15),
-
-            // Price Details
             _priceDetails(),
-
             SizedBox(height: 15),
-
-            // Continue Button
             _continueButton(context),
           ],
         ),
@@ -112,7 +102,6 @@ class OrderSummaryScreen extends State<Oredersummary> {
     );
   }
 
-  // Step Indicator Widget
   Widget _stepIndicator(String title, bool isCompleted) {
     return Column(
       children: [
@@ -125,7 +114,6 @@ class OrderSummaryScreen extends State<Oredersummary> {
     );
   }
 
-  // Delivery Details Widget
   Widget _deliveryDetails(BuildContext context) {
     return Card(
       child: Padding(
@@ -142,16 +130,12 @@ class OrderSummaryScreen extends State<Oredersummary> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => Addresschange()));
-                  },
-                  child: Text(
-                    "Change",
-                    style: TextStyle(color: Colors.red),
-                  )),
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Addresschange()));
+                },
+                child: Text("Change", style: TextStyle(color: Colors.red)),
+              ),
             ),
           ],
         ),
@@ -159,7 +143,6 @@ class OrderSummaryScreen extends State<Oredersummary> {
     );
   }
 
-  // Product Details Widget
   Widget _productDetails() {
     if (productData == null) {
       return Center(child: CircularProgressIndicator());
@@ -171,7 +154,7 @@ class OrderSummaryScreen extends State<Oredersummary> {
         child: Row(
           children: [
             Image.network(
-              productData!['image'] ?? '', // assuming field name is 'image'
+              productData!['image'] ?? '',
               fit: BoxFit.cover,
               width: 80,
               height: 120,
@@ -189,31 +172,11 @@ class OrderSummaryScreen extends State<Oredersummary> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text('Quantity : ${productData!['quantity'] ?? '1'}'),
-                  Row(
-                    children: [
-                      Icon(Icons.star, color: Colors.green, size: 14),
-                      Text(" ${productData!['rating'] ?? '4.0'}"),
-                    ],
-                  ),
-                  Text("₹${productData!['price'] ?? '0'}",
+                  Text(
+                      'Quantity : ${productData?['quantity']?.toString() ?? '1'}'),
+                  Text("₹${productData?['price'] ?? '0'}",
                       style: TextStyle(
                           color: Colors.green, fontWeight: FontWeight.bold)),
-                  Row(
-                    children: [
-                      Text("₹${productData!['originalPrice'] ?? '0'}",
-                          style: TextStyle(
-                              decoration: TextDecoration.lineThrough)),
-                      SizedBox(width: 5),
-                      Text("${productData!['discountPercent'] ?? '0%'} off",
-                          style: TextStyle(color: Colors.green)),
-                    ],
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    "Delivery by ${productData!['deliveryDate'] ?? 'N/A'}",
-                    style: TextStyle(color: Colors.grey),
-                  ),
                 ],
               ),
             ),
@@ -223,7 +186,6 @@ class OrderSummaryScreen extends State<Oredersummary> {
     );
   }
 
-  // VIP Membership Widget
   Widget _vipMembership() {
     return Card(
       child: Padding(
@@ -256,9 +218,10 @@ class OrderSummaryScreen extends State<Oredersummary> {
     );
   }
 
-  // Price Details Widget
   Widget _priceDetails() {
-    var total = productData!['price'] + 3;
+    double price =
+        double.tryParse(productData?['price'].toString() ?? '0') ?? 0.0;
+    double total = price + 3;
     return Card(
       child: Padding(
         padding: EdgeInsets.all(10),
@@ -268,20 +231,18 @@ class OrderSummaryScreen extends State<Oredersummary> {
             Text("Price Details",
                 style: TextStyle(fontWeight: FontWeight.bold)),
             Divider(),
-            _priceRow("Price (${productData!['quantity'] ?? '1'}item)",
-                "₹${productData!['price'] ?? '0'}"),
-            _priceRow("Discount", "₹${productData!['discountPercent'] ?? '0'}",
-                color: Colors.green),
+            _priceRow("Price (${productData?['quantity'] ?? '1'} item)",
+                "₹${price.toStringAsFixed(2)}"),
             _priceRow("Platform Fee", "₹3"),
             Divider(),
-            _priceRow("Total Amount", "₹${total}", isBold: true),
+            _priceRow("Total Amount", "₹${total.toStringAsFixed(2)}",
+                isBold: true),
           ],
         ),
       ),
     );
   }
 
-  // Price Row Widget
   Widget _priceRow(String label, String amount,
       {bool isBold = false, Color color = Colors.black}) {
     return Padding(
@@ -299,7 +260,6 @@ class OrderSummaryScreen extends State<Oredersummary> {
     );
   }
 
-  // Continue Button Widget
   Widget _continueButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
@@ -309,21 +269,16 @@ class OrderSummaryScreen extends State<Oredersummary> {
         onPressed: () {
           if (productData == null) return;
 
-          int price = productData!['price'] ?? 0;
-          int platformFee = 3;
-          int total = price + platformFee;
+          double price =
+              double.tryParse(productData?['price'].toString() ?? '0') ?? 0.0;
+          double total = price + 3;
+
           var options = {
             'key': 'rzp_test_NHBdhCepaAeqho',
-            'amount': total * 100, //in paise.
+            'amount': (total * 100).toInt(),
             'name': 'MP Brand.',
-            // 'order_id':
-            //     'order_EMBFqjDHEEn80l', // Generate order_id using Orders API
-            'description': productData!['title'] ?? 'No description',
-            'timeout': 60, // in seconds
-            // 'prefill': {
-            //   'contact': '9000090000',
-            //   'email': 'gaurav.kumar@example.com'
-            // }
+            'description': productData?['title'] ?? 'No description',
+            'timeout': 60,
           };
           _razorpay.open(options);
         },
