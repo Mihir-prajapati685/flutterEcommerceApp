@@ -1,9 +1,62 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app/presentation/ProdutBuypage/addresschange.dart';
-import 'package:ecommerce_app/presentation/ProdutBuypage/paymentlastpage.dart';
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
-class OrderSummaryScreen extends StatelessWidget {
+class Oredersummary extends StatefulWidget {
+  final String documentId;
+
+  Oredersummary({required this.documentId});
+
   @override
+  State<Oredersummary> createState() => OrderSummaryScreen();
+}
+
+class OrderSummaryScreen extends State<Oredersummary> {
+  Map<String, dynamic>? productData;
+  @override
+  var _razorpay = Razorpay();
+
+  void dispose() {
+    _razorpay.clear();
+  }
+
+  void initState() {
+    super.initState();
+    _fetchProductData();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    // Do something when payment succeeds
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    // Do something when payment fails
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    // Do something when an external wallet is selected
+  }
+
+  Future<void> _fetchProductData() async {
+    var snapshot = await FirebaseFirestore.instance
+        .collection('buy')
+        .doc(widget.documentId)
+        .get();
+
+    if (snapshot.exists) {
+      setState(() {
+        productData = snapshot.data();
+      });
+      print("data fetch sucessfully");
+    } else {
+      print("nai aave tarathi thay e kari le");
+    }
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -108,16 +161,22 @@ class OrderSummaryScreen extends StatelessWidget {
 
   // Product Details Widget
   Widget _productDetails() {
+    if (productData == null) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return Card(
       child: Padding(
         padding: EdgeInsets.all(10),
         child: Row(
           children: [
             Image.network(
-              "https://gratisography.com/wp-content/uploads/2024/11/gratisography-augmented-reality-800x525.jpg",
-              fit: BoxFit.cover, // Replace with actual image URL
+              productData!['image'] ?? '', // assuming field name is 'image'
+              fit: BoxFit.cover,
               width: 80,
               height: 120,
+              errorBuilder: (context, error, stackTrace) =>
+                  Icon(Icons.broken_image, size: 80),
             ),
             SizedBox(width: 10),
             Expanded(
@@ -125,33 +184,36 @@ class OrderSummaryScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Earbuds Nano Glass for JBL TOUR P...",
+                    productData!['title'] ?? 'No Title',
                     style: TextStyle(fontWeight: FontWeight.bold),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text("Pack of 2"),
+                  Text('Quantity : ${productData!['quantity'] ?? '1'}'),
                   Row(
                     children: [
                       Icon(Icons.star, color: Colors.green, size: 14),
-                      Text(" 3.2 (31)"),
+                      Text(" ${productData!['rating'] ?? '4.0'}"),
                     ],
                   ),
-                  Text("₹196",
+                  Text("₹${productData!['price'] ?? '0'}",
                       style: TextStyle(
                           color: Colors.green, fontWeight: FontWeight.bold)),
                   Row(
                     children: [
-                      Text("₹1,399",
+                      Text("₹${productData!['originalPrice'] ?? '0'}",
                           style: TextStyle(
                               decoration: TextDecoration.lineThrough)),
                       SizedBox(width: 5),
-                      Text("85% off", style: TextStyle(color: Colors.green)),
+                      Text("${productData!['discountPercent'] ?? '0%'} off",
+                          style: TextStyle(color: Colors.green)),
                     ],
                   ),
                   SizedBox(height: 5),
-                  Text("Delivery by Mar 12, Wed • FREE",
-                      style: TextStyle(color: Colors.grey)),
+                  Text(
+                    "Delivery by ${productData!['deliveryDate'] ?? 'N/A'}",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -196,6 +258,7 @@ class OrderSummaryScreen extends StatelessWidget {
 
   // Price Details Widget
   Widget _priceDetails() {
+    var total = productData!['price'] + 3;
     return Card(
       child: Padding(
         padding: EdgeInsets.all(10),
@@ -205,11 +268,13 @@ class OrderSummaryScreen extends StatelessWidget {
             Text("Price Details",
                 style: TextStyle(fontWeight: FontWeight.bold)),
             Divider(),
-            _priceRow("Price (1 item)", "₹1,399"),
-            _priceRow("Discount", "-₹1,203", color: Colors.green),
+            _priceRow("Price (${productData!['quantity'] ?? '1'}item)",
+                "₹${productData!['price'] ?? '0'}"),
+            _priceRow("Discount", "₹${productData!['discountPercent'] ?? '0'}",
+                color: Colors.green),
             _priceRow("Platform Fee", "₹3"),
             Divider(),
-            _priceRow("Total Amount", "₹199", isBold: true),
+            _priceRow("Total Amount", "₹${total}", isBold: true),
           ],
         ),
       ),
@@ -242,11 +307,28 @@ class OrderSummaryScreen extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
         onPressed: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => PaymentLastPage()));
+          if (productData == null) return;
+
+          int price = productData!['price'] ?? 0;
+          int platformFee = 3;
+          int total = price + platformFee;
+          var options = {
+            'key': 'rzp_test_NHBdhCepaAeqho',
+            'amount': total * 100, //in paise.
+            'name': 'MP Brand.',
+            // 'order_id':
+            //     'order_EMBFqjDHEEn80l', // Generate order_id using Orders API
+            'description': productData!['title'] ?? 'No description',
+            'timeout': 60, // in seconds
+            // 'prefill': {
+            //   'contact': '9000090000',
+            //   'email': 'gaurav.kumar@example.com'
+            // }
+          };
+          _razorpay.open(options);
         },
         child: Text(
-          "CONTINUE",
+          "Conform Order",
           style: TextStyle(color: Colors.white, fontSize: 19),
         ),
       ),

@@ -15,7 +15,8 @@ class BuyNowService {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => OrderSummaryScreen(), // or any screen you want
+          builder: (context) => Oredersummary(
+              documentId: documentReference.id), // or any screen you want
         ),
       );
     } catch (e) {
