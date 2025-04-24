@@ -37,10 +37,6 @@ class MainscreenSaleItem extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              'View all',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
-            ),
           ],
         ),
         BlocProvider(

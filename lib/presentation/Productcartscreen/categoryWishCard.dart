@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app/Data/ProductCardData/WomencardData.dart';
 import 'package:ecommerce_app/Models/Product.dart';
 import 'package:ecommerce_app/presentation/ProductDetail/productdetail.dart';
@@ -10,12 +11,54 @@ class Womencards extends StatelessWidget {
 
   Womencards({required this.categoryid});
   @override
+  Future<void> addToProductDetailAndNavigate(
+      BuildContext context, Product product) async {
+    try {
+      // Optional: Print for debugging
+      print('Adding to Firestore:');
+      print('id: ${product.id}');
+      print('title: ${product.name}');
+      print('image: ${product.image}');
+      print('category: ${product.categoryId}');
+      print('description: ${product.description}');
+      print('price:${product.price}');
+
+      if (product.id == null ||
+          product.name == null ||
+          product.image == null ||
+          product.categoryId == null ||
+          product.description == null ||
+          product.price == null) {
+        throw Exception('One or more product fields are null!');
+      }
+
+      await FirebaseFirestore.instance
+          .collection('productdetail')
+          .doc(product.id)
+          .set({
+        'id': product.id,
+        'title': product.name,
+        'image': product.image,
+        'category': product.categoryId,
+        'description': product.description,
+        'price': product.price,
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductDetail(productId: product.id),
+        ),
+      );
+    } catch (e) {
+      print('Error in addToProductDetailAndNavigate: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Something went wrong: $e")),
+      );
+    }
+  }
+
   Widget build(BuildContext context) {
-    // List<Product> filteredProducts =
-    //     products.where((product) => product.id == categoryid).toList();
-    // if (filteredProducts.isEmpty) {
-    //   Fluttertoast.showToast(msg: "no product");
-    // }
     List<Product> filteredProducts = products.toList();
     if (filteredProducts.isEmpty) {
       return Center(child: Text("No products found"));
@@ -110,20 +153,10 @@ class Womencards extends StatelessWidget {
                   childAspectRatio: 0.6,
                 ),
                 itemBuilder: (context, index) {
+                  final product = filteredProducts[index];
                   return InkWell(
-                    onTap: () {
-                      final String img = filteredProducts[index].image;
-                      final String name = filteredProducts[index].name;
-                      final String id = filteredProducts[index].id;
-                      // Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //         builder: (context) => ProductDetail(
-                      //               img: img,
-                      //               name: name,
-                      //               id: id,
-                      //             )));
-                    },
+                    onTap: () =>
+                        addToProductDetailAndNavigate(context, product),
                     child: Card(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),

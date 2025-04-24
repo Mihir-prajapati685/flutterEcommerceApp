@@ -24,11 +24,13 @@ class _ProductDetailState extends State<ProductDetail> {
   }
 
   Future<void> fetchProductData() async {
+    print("Fetching product with ID: ${widget.productId}");
     try {
       DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
           .collection('productdetail')
           .doc(widget.productId)
           .get();
+      print(documentSnapshot.data());
 
       if (documentSnapshot.exists) {
         setState(() {

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app/presentation/ProductDetail/productdetail.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class MainscreenTopbrandItem extends StatefulWidget {
@@ -53,6 +54,7 @@ class _MainscreenTopbrandItem extends State<MainscreenTopbrandItem> {
       final data = doc.data() as Map<String, dynamic>;
       return {
         'id': doc.id,
+        'description': data['description']?.toString() ?? '',
         'image': data['image']?.toString() ?? '',
         'title': data['title']?.toString() ?? '',
         'price': data['price']?.toString() ?? '',
@@ -65,57 +67,32 @@ class _MainscreenTopbrandItem extends State<MainscreenTopbrandItem> {
     });
   }
 
-  Future<void> handleProductClick(
-      BuildContext context, String productId) async {
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('products')
-          .doc(productId)
-          .get();
+  void handleProductClick(Map<String, dynamic> productData) async {
+    String productId = productData['id'].toString();
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance
+        .collection('productdetail')
+        .doc(productId)
+        .get();
 
-      if (doc.exists) {
-        final data = doc.data();
-
-        if (data != null) {
-          final productData = {
-            'productId': productId,
-            'title': data['title']?.toString() ?? 'Untitled Product',
-            'image': data['image']?.toString() ?? '',
-            'price': data['price']?.toString() ?? '0',
-            'description': data['description']?.toString() ?? 'No description',
-            'category': data['category']?.toString() ?? 'Uncategorized',
-            'brand': data['brand']?.toString() ?? 'Unknown',
-            'timestamp': FieldValue.serverTimestamp(),
-          };
-
-          // Check if already exists
-          final existing = await FirebaseFirestore.instance
-              .collection('productDetails')
-              .where('productId', isEqualTo: productId)
-              .limit(1)
-              .get();
-
-          if (existing.docs.isEmpty) {
-            await FirebaseFirestore.instance
-                .collection('productDetails')
-                .add(productData);
-          }
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductDetail(productId: productId),
-            ),
-          );
-        } else {
-          _showError(context, 'Product data is missing.');
-        }
-      } else {
-        _showError(context, 'Product does not exist.');
-      }
-    } catch (e) {
-      _showError(context, 'Something went wrong: $e');
+    if (!snapshot.exists) {
+      await FirebaseFirestore.instance
+          .collection('productdetail')
+          .doc(productId) // 👈 Use this to make sure ProductDetail gets it
+          .set(productData);
     }
+
+    final producti = productData['id']?.toString();
+    if (producti == null || producti.isEmpty) {
+      Fluttertoast.showToast(msg: "Invalid product ID");
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProductDetail(productId: productId),
+      ),
+    );
   }
 
   void _showError(BuildContext context, String message) {
@@ -123,7 +100,7 @@ class _MainscreenTopbrandItem extends State<MainscreenTopbrandItem> {
       SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Column(children: [
@@ -137,10 +114,6 @@ class _MainscreenTopbrandItem extends State<MainscreenTopbrandItem> {
               fontSize: 40,
               fontWeight: FontWeight.bold,
             ),
-          ),
-          Text(
-            'View all',
-            style: TextStyle(color: Colors.grey, fontSize: 15),
           ),
         ],
       ),
@@ -203,13 +176,12 @@ class _MainscreenTopbrandItem extends State<MainscreenTopbrandItem> {
                 ),
                 itemBuilder: (context, index) {
                   return ProductCard(
-                    imageUrl: products[index]["image"]!,
-                    title: products[index]["title"]!,
-                    price: products[index]["price"]!,
-                    productId: products[index]["id"]!,
-                    onTap: () =>
-                        handleProductClick(context, products[index]["id"]!),
-                  );
+                      imageUrl: products[index]["image"]!,
+                      title: products[index]["title"]!,
+                      price: products[index]["price"]!,
+                      productId: products[index]["id"]!,
+                      onTap: () => handleProductClick(
+                          products[index] as Map<String, dynamic>));
                 },
               ),
       ),
