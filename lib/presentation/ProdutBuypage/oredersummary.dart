@@ -212,10 +212,11 @@ class OrderSummaryScreen extends State<Oredersummary> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => Addresschange()));
-                },
+                // onPressed: () {
+                //   Navigator.push(context,
+                //       MaterialPageRoute(builder: (context) => Addresschange()));
+                // },
+                onPressed: _updateAddress,
                 child: Text("Change", style: TextStyle(color: Colors.red)),
               ),
             ),

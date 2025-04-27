@@ -9,10 +9,9 @@ class Addresschange extends StatefulWidget {
 }
 
 class _AddressChange extends State<Addresschange> {
-  String?
-      selectedAddress; // Change to String to match the ID type from Firestore
-  List<Map<String, dynamic>> addresses = []; // Store addresses from Firestore
-  bool isChecked = false; // Checkbox value to track if the checkbox is selected
+  String? selectedAddress;
+  List<Map<String, dynamic>> addresses = [];
+  bool isChecked = false;
 
   @override
   void initState() {
@@ -20,10 +19,8 @@ class _AddressChange extends State<Addresschange> {
     _fetchAddresses();
   }
 
-  // Function to fetch addresses from Firestore
   Future<void> _fetchAddresses() async {
     try {
-      // Get the current user's UID
       User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         print("No user is logged in");
@@ -33,7 +30,6 @@ class _AddressChange extends State<Addresschange> {
       String userId = currentUser.uid;
       print("Fetching addresses for user UID: $userId");
 
-      // Fetch the addresses for the current user from the "newaddress" collection
       final snapshot = await FirebaseFirestore.instance
           .collection('newaddress')
           .where('uid', isEqualTo: userId)
@@ -42,18 +38,16 @@ class _AddressChange extends State<Addresschange> {
       if (snapshot.docs.isNotEmpty) {
         List<Map<String, dynamic>> fetchedAddresses = snapshot.docs.map((doc) {
           return {
-            'id': doc.id, // Firestore document ID, which is a String
+            'id': doc.id,
             'fullName': doc['fullName'],
-            'address': doc['house'] +
-                ', ' +
-                doc['road'] +
-                ', ' +
-                doc['city'] +
-                ', ' +
-                doc['state'] +
-                ' - ' +
-                doc['pincode'],
+            'house': doc['house'],
+            'road': doc['road'],
+            'city': doc['city'],
+            'state': doc['state'],
+            'pincode': doc['pincode'],
             'phoneNumber': doc['phoneNumber'],
+            'address':
+                '${doc['house']}, ${doc['road']}, ${doc['city']}, ${doc['state']} - ${doc['pincode']}',
           };
         }).toList();
 
@@ -68,10 +62,9 @@ class _AddressChange extends State<Addresschange> {
     }
   }
 
-  // Function to store selected address to finaladdress collection
-  Future<void> _storeFinalAddress(String addressId) async {
+  Future<void> _storeFinalAddress(
+      Map<String, dynamic> selectedAddressData) async {
     try {
-      // Get the current user's UID
       User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) {
         print("No user is logged in");
@@ -80,22 +73,16 @@ class _AddressChange extends State<Addresschange> {
 
       String userId = currentUser.uid;
 
-      // Get the selected address data
-      final selectedAddressData =
-          addresses.firstWhere((address) => address['id'] == addressId);
-
-      // Add the selected address to finaladdress collection
       await FirebaseFirestore.instance.collection('finaladdress').add({
         'uid': userId,
         'fullName': selectedAddressData['fullName'],
         'address': selectedAddressData['address'],
         'phoneNumber': selectedAddressData['phoneNumber'],
-        'house': selectedAddressData['address'].split(
-            ',')[0], // You can extract the specific address fields if necessary
-        'road': selectedAddressData['address'].split(',')[1],
-        'city': selectedAddressData['address'].split(',')[2],
-        'state': selectedAddressData['address'].split(',')[3],
-        'pincode': selectedAddressData['address'].split('-')[1].trim(),
+        'house': selectedAddressData['house'],
+        'road': selectedAddressData['road'],
+        'city': selectedAddressData['city'],
+        'state': selectedAddressData['state'],
+        'pincode': selectedAddressData['pincode'],
       });
 
       print("Address stored in finaladdress collection successfully");
@@ -142,9 +129,11 @@ class _AddressChange extends State<Addresschange> {
                     color: Colors.blue,
                     onPressed: () {
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => EditButtonpage()));
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditButtonpage(),
+                        ),
+                      );
                     },
                     icon: Icon(Icons.add, size: 24),
                   ),
@@ -196,10 +185,11 @@ class _AddressChange extends State<Addresschange> {
                             child: TextButton(
                               onPressed: () {
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            EditButtonpage()));
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditButtonpage(),
+                                  ),
+                                );
                               },
                               child: Text(
                                 "Edit",
@@ -221,15 +211,19 @@ class _AddressChange extends State<Addresschange> {
                   backgroundColor: Colors.red,
                   minimumSize: Size(double.infinity, 50),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (selectedAddress != null) {
-                    // Store the selected address in finaladdress collection
-                    _storeFinalAddress(selectedAddress!);
-                    Navigator.pop(context);
+                    final selectedAddressData = addresses.firstWhere(
+                        (address) => address['id'] == selectedAddress);
+
+                    await _storeFinalAddress(selectedAddressData);
+
+                    Navigator.pop(
+                        context, selectedAddressData); // <-- Return address
                   } else {
-                    // Show a message if no address is selected
                     ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Please select an address")));
+                      SnackBar(content: Text("Please select an address")),
+                    );
                   }
                 },
                 child: Text(
