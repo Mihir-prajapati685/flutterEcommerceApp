@@ -12,13 +12,9 @@ class Cart extends StatefulWidget {
 }
 
 class _Cart extends State<Cart> {
+  List<int> quantities = [];
   final CartBloc cartBloc = CartBloc();
   int quantity = 1;
-
-  // Adding variables for Subtotal, Shipping, and Total
-  double subtotal = 0.0;
-  double shipping = 25.99; // Assuming a fixed shipping price
-  double total = 0.0;
 
   @override
   void initState() {
@@ -26,25 +22,11 @@ class _Cart extends State<Cart> {
     cartBloc.add(CarPageInitialEvent());
   }
 
-  // Function to calculate the subtotal, shipping, and total
-  void calculateTotal(List<dynamic> cartData) {
-    double newSubtotal = 0.0;
-    cartData.forEach((item) {
-      double price = double.tryParse(item['price'].toString()) ?? 0.0;
-      // Price of the item * quantity (update for each item individually)
-      newSubtotal += price * quantity; // Price calculation updated
-    });
-    setState(() {
-      subtotal = newSubtotal;
-      total = subtotal + shipping; // Total is subtotal + shipping
-    });
-  }
-
   // Update cart data when quantity changes
   void updateItemQuantity(List<dynamic> cartData, int index, int newQuantity) {
     setState(() {
-      quantity = newQuantity;
-      calculateTotal(cartData);
+      // Ensure quantity doesn't go below 1
+      quantities[index] = newQuantity > 0 ? newQuantity : 1;
     });
   }
 
@@ -149,6 +131,10 @@ class _Cart extends State<Cart> {
                             ),
                           );
                         } else if (state is CartdataFetchSucessfullState) {
+                          if (quantities.length != state.cartdata.length) {
+                            quantities =
+                                List<int>.filled(state.cartdata.length, 1);
+                          }
                           return Column(
                             children: [
                               ListView.builder(
@@ -163,6 +149,8 @@ class _Cart extends State<Cart> {
                                       (item['image'] ?? '').toString();
                                   final String price =
                                       (item['price'] ?? '0').toString();
+                                  final double basePrice =
+                                      double.tryParse(price) ?? 0.0;
                                   final String size = (item['selectedSize'] ??
                                           'size not selected')
                                       .toString();
@@ -226,14 +214,15 @@ class _Cart extends State<Cart> {
                                                             .ellipsis,
                                                       ),
                                                       SizedBox(height: 8),
+                                                      // Updated price calculation
                                                       Text(
-                                                        "€${(double.tryParse(price) ?? 0.0) * (quantity ?? 1)}",
+                                                        "₹${(basePrice * quantities[index]).toStringAsFixed(2)}", // Dynamic price calculation
                                                         style: TextStyle(
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color:
-                                                                Colors.orange),
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.orange,
+                                                        ),
                                                       ),
                                                       RatingBarIndicator(
                                                         rating: 4.5,
@@ -279,13 +268,16 @@ class _Cart extends State<Cart> {
                                                                       .red,
                                                                   size: 20),
                                                               onPressed: () {
-                                                                if (quantity >
+                                                                // Decrease quantity but not below 1
+                                                                if (quantities[
+                                                                        index] >
                                                                     1) {
                                                                   updateItemQuantity(
                                                                       state
                                                                           .cartdata,
                                                                       index,
-                                                                      quantity -
+                                                                      quantities[
+                                                                              index] -
                                                                           1);
                                                                 }
                                                               },
@@ -293,7 +285,7 @@ class _Cart extends State<Cart> {
                                                           ),
                                                           SizedBox(width: 10),
                                                           Text(
-                                                            "$quantity",
+                                                            "${quantities[index]}",
                                                             style: TextStyle(
                                                               fontSize: 16,
                                                               fontWeight:
@@ -324,7 +316,8 @@ class _Cart extends State<Cart> {
                                                                     state
                                                                         .cartdata,
                                                                     index,
-                                                                    quantity +
+                                                                    quantities[
+                                                                            index] +
                                                                         1);
                                                               },
                                                             ),
@@ -348,16 +341,17 @@ class _Cart extends State<Cart> {
                                                           final productData = {
                                                             'title':
                                                                 item['title'],
-                                                            'price':
-                                                                item['price'],
+                                                            'price': basePrice *
+                                                                quantities[
+                                                                    index], // Send updated price
                                                             'image':
                                                                 item['image'],
                                                             'selectedSize': item[
                                                                 'selectedSize'],
                                                             'selectedColor': item[
                                                                 'selectedColor'],
-                                                            'quantity':
-                                                                1, // optional if available
+                                                            'quantity': quantities[
+                                                                index], // Send updated quantity
                                                             'timestamp':
                                                                 Timestamp.now()
                                                           };
@@ -399,131 +393,12 @@ class _Cart extends State<Cart> {
                                   );
                                 },
                               ),
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color.fromARGB(
-                                            255, 233, 233, 233),
-                                        spreadRadius: 1,
-                                        blurRadius: 1,
-                                      )
-                                    ]),
-                                width: double.infinity,
-                                height: 250,
-                                child: Padding(
-                                  padding: EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SummaryRow(
-                                          label: "Sub Total",
-                                          value:
-                                              "€${subtotal.toStringAsFixed(2)}"),
-                                      SizedBox(height: 10),
-                                      SummaryRow(
-                                          label: "Shipping",
-                                          value: "€$shipping"),
-                                      Divider(
-                                          thickness: 1,
-                                          color: Colors.grey.shade300),
-                                      SummaryRow(
-                                        label: "Total",
-                                        value: "€${total.toStringAsFixed(2)}",
-                                        istotal: true,
-                                      ),
-                                      SizedBox(height: 30),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 50,
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.red,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius
-                                                  .zero, // No rounded corners
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            // Handle checkout
-                                          },
-                                          child: Text(
-                                            "Checkout",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 18),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
                             ],
                           );
-                        } else {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.network(
-                                    "https://img.freepik.com/premium-vector/empty-cart_701961-7086.jpg",
-                                    height: 150,
-                                  ),
-                                  const SizedBox(height: 20),
-                                  const Text(
-                                    'Whoops',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.red,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  const Text(
-                                    'Your cart is empty',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  const Text(
-                                    'Looks like your cart is empty, add something and make me happy',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 14, color: Colors.grey),
-                                  ),
-                                  const SizedBox(height: 20),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      print('Navigate to Shop');
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 30, vertical: 12),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'Shop Now',
-                                      style: TextStyle(
-                                          color: Colors.white, fontSize: 16),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
                         }
+                        return Center(child: CircularProgressIndicator());
                       },
-                    ),
+                    )
                   ],
                 ),
               ),
@@ -531,43 +406,6 @@ class _Cart extends State<Cart> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class SummaryRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool istotal;
-
-  const SummaryRow({
-    required this.label,
-    required this.value,
-    this.istotal = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: istotal ? 18 : 16,
-            fontWeight: istotal ? FontWeight.bold : FontWeight.normal,
-            color: istotal ? Colors.black : Colors.black,
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: istotal ? 20 : 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.orange,
-          ),
-        )
-      ],
     );
   }
 }
