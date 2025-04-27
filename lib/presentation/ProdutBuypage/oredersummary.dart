@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app/presentation/ProdutBuypage/addresschange.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/UiFunction/receipt.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
@@ -15,6 +16,8 @@ class Oredersummary extends StatefulWidget {
 
 class OrderSummaryScreen extends State<Oredersummary> {
   Map<String, dynamic>? productData;
+  Map<String, dynamic>?
+      finalAddressData; // Variable to store final address data
   var _razorpay = Razorpay();
 
   @override
@@ -27,11 +30,60 @@ class OrderSummaryScreen extends State<Oredersummary> {
   void initState() {
     super.initState();
     _fetchProductData();
+    _fetchFinalAddressData(); // Fetch final address data when page initializes
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
   }
 
+  // Fetch current user's data from the finaladdress collection
+  Future<void> _fetchFinalAddressData() async {
+    try {
+      // Get the current user's UID
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        print("No user is logged in");
+        return;
+      }
+
+      String userId = currentUser.uid;
+      print("Fetching final address for user UID: $userId");
+
+      // Fetch the address from the "finaladdress" collection
+      final snapshot = await FirebaseFirestore.instance
+          .collection('finaladdress')
+          .where('uid', isEqualTo: userId)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        // Assuming the final address is stored in the first document
+        setState(() {
+          finalAddressData = snapshot.docs[0].data();
+        });
+        print("Final address fetched successfully");
+      } else {
+        print("No final address found for this user");
+      }
+    } catch (e) {
+      print("Error fetching final address: $e");
+    }
+  }
+
+  Future<void> _updateAddress() async {
+    final selectedAddress = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Addresschange()),
+    );
+
+    if (selectedAddress != null) {
+      setState(() {
+        finalAddressData =
+            selectedAddress; // Update the address with the selected one
+      });
+    }
+  }
+
+  // Handle payment success
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
     if (productData == null) return;
 
@@ -42,12 +94,11 @@ class OrderSummaryScreen extends State<Oredersummary> {
         context,
         MaterialPageRoute(
             builder: (context) => ReceiptPage(
-                  orderId: widget
-                      .documentId, // Document ID ko hi Order ID maan lenge
+                  orderId: widget.documentId, // Document ID as Order ID
                   customerName:
-                      "Janki Prajapati", // Ya Firestore se le sakte ho agar stored hai
+                      "Janki Prajapati", // Placeholder, can fetch from Firestore
                   transactionId:
-                      response.paymentId ?? 'Unknown', // Razorpay se milta hai
+                      response.paymentId ?? 'Unknown', // Razorpay payment ID
                   totalAmount: total.toDouble(),
                   items: [
                     {
@@ -61,13 +112,14 @@ class OrderSummaryScreen extends State<Oredersummary> {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    // Handle error
+    // Handle payment error
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
-    // Handle wallet
+    // Handle external wallet
   }
 
+  // Fetch product data
   Future<void> _fetchProductData() async {
     var snapshot = await FirebaseFirestore.instance
         .collection('buy')
@@ -78,12 +130,13 @@ class OrderSummaryScreen extends State<Oredersummary> {
       setState(() {
         productData = snapshot.data();
       });
-      print("data fetch successfully");
+      print("Product data fetched successfully");
     } else {
       print("Document does not exist");
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -124,6 +177,7 @@ class OrderSummaryScreen extends State<Oredersummary> {
     );
   }
 
+  // Step indicator widget
   Widget _stepIndicator(String title, bool isCompleted) {
     return Column(
       children: [
@@ -136,6 +190,7 @@ class OrderSummaryScreen extends State<Oredersummary> {
     );
   }
 
+  // Delivery details widget
   Widget _deliveryDetails(BuildContext context) {
     return Card(
       child: Padding(
@@ -145,10 +200,15 @@ class OrderSummaryScreen extends State<Oredersummary> {
           children: [
             Text("Deliver to:", style: TextStyle(fontWeight: FontWeight.bold)),
             SizedBox(height: 5),
-            Text("Janki Prajapati",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            Text("54 Ayodhya Dham, Nani Kadi, near Krishna Flat, Kadi 382715"),
-            Text("7069737512"),
+            Text(finalAddressData != null
+                ? finalAddressData!['fullName'] ?? 'No Name'
+                : 'No Address'),
+            Text(finalAddressData != null
+                ? finalAddressData!['address'] ?? 'No Address'
+                : 'No Address'),
+            Text(finalAddressData != null
+                ? finalAddressData!['phoneNumber'] ?? 'No Phone'
+                : 'No Phone'),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(

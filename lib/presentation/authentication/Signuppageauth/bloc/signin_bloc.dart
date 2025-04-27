@@ -53,14 +53,23 @@ class SigninBloc extends Bloc<SigninEvent, SigninState> {
           // ✅ Send email verification
           if (user != null && !user.emailVerified) {
             await user.sendEmailVerification();
+          }
 
-            // 💾 Save user info to Firestore only after creating account
+          // 💾 Save user info to Firestore only after creating account
+          if (user != null) {
+            // Check if user is not null before accessing uid
             await collref.add({
               'username': event.username,
               'email': event.email,
               'password': event.password,
-              'uid': user.uid,
+              'uid': user.uid, // Now safely accessing user.uid
             });
+
+            // Now, sign in the user after successful registration
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+              email: event.email,
+              password: event.password,
+            );
 
             emit(SuccessfullSignInState()); // You can handle navigation in UI
           }

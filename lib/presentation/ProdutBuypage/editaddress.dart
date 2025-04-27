@@ -13,16 +13,17 @@ class EditButtonpage extends StatelessWidget {
   TextEditingController roadController = TextEditingController();
 
   @override
-  Future<void> saveAddressToFirestore() async {
+  Future<void> saveAddressToFirestore(BuildContext context) async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
+      print(user);
 
       if (user == null) {
         print("❌ No user logged in!");
         return;
       }
 
-      await FirebaseFirestore.instance.collection('new address').add({
+      await FirebaseFirestore.instance.collection('newaddress').add({
         'uid': user.uid,
         'fullName': nameController.text,
         'phoneNumber': phoneController.text,
@@ -77,11 +78,12 @@ class EditButtonpage extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // Handle form submission
+                        saveAddressToFirestore(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                               content: Text("Address Saved Successfully!")),
                         );
+                        Navigator.pop(context);
                       }
                     },
                     style: ElevatedButton.styleFrom(

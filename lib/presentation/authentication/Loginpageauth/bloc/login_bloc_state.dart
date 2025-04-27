@@ -46,6 +46,12 @@ class EmailNotMatchState extends LoginActionState {}
 
 class PasswordNotMatchState extends LoginActionState {}
 
+class AlreadyLoggedInState extends LoginActionState {
+  final User user;
+
+  AlreadyLoggedInState({required this.user});
+}
+
 class CatchErrorState extends LoginActionState {
   final String error;
   CatchErrorState({required this.error});

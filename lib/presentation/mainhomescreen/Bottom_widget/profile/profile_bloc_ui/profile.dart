@@ -58,7 +58,7 @@ class ProfileContent extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            data['name'] ?? "No Name",
+                            data['username'] ?? "No Name",
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
