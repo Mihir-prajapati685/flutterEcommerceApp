@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class EditButtonpage extends StatelessWidget {
@@ -11,6 +13,33 @@ class EditButtonpage extends StatelessWidget {
   TextEditingController roadController = TextEditingController();
 
   @override
+  Future<void> saveAddressToFirestore() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        print("❌ No user logged in!");
+        return;
+      }
+
+      await FirebaseFirestore.instance.collection('new address').add({
+        'uid': user.uid,
+        'fullName': nameController.text,
+        'phoneNumber': phoneController.text,
+        'pincode': pincodeController.text,
+        'state': stateController.text,
+        'city': cityController.text,
+        'house': houseController.text,
+        'road': roadController.text,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      print("✅ Address saved successfully to Firestore.");
+    } catch (e) {
+      print("🔥 Error saving address: $e");
+    }
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],

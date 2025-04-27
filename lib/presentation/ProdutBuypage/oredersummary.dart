@@ -33,8 +33,30 @@ class OrderSummaryScreen extends State<Oredersummary> {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    if (productData == null) return;
+
+    double price =
+        double.tryParse(productData?['price'].toString() ?? '0') ?? 0.0;
+    double total = price + 3;
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => ReceiptPage()));
+        context,
+        MaterialPageRoute(
+            builder: (context) => ReceiptPage(
+                  orderId: widget
+                      .documentId, // Document ID ko hi Order ID maan lenge
+                  customerName:
+                      "Janki Prajapati", // Ya Firestore se le sakte ho agar stored hai
+                  transactionId:
+                      response.paymentId ?? 'Unknown', // Razorpay se milta hai
+                  totalAmount: total.toDouble(),
+                  items: [
+                    {
+                      'name': productData?['title'] ?? 'No Title',
+                      'quantity': productData?['quantity'] ?? 1,
+                      'price': price,
+                    },
+                  ],
+                )));
     // Handle success
   }
 

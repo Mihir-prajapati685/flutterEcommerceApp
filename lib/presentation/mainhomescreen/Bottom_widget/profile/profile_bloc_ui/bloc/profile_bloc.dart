@@ -17,6 +17,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       ProfilePageInitialEvent event, Emitter<ProfileState> emit) async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
+      print("🔍 FirebaseAuth.currentUser: $user");
       if (user == null) {
         print("No user logged in! Please sign in first.");
         emit(ProfileDataFromTheFirebaseDataNOtState());
@@ -30,6 +31,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           .collection('signincollection')
           .where('uid', isEqualTo: uid) // 🔥 Match 'uid' field in Firestore
           .get();
+
       if (querySnapshot.docs.isNotEmpty) {
         // 🔥 Get the first matching document
         DocumentSnapshot userdoc = querySnapshot.docs.first;

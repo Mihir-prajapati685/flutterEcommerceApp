@@ -1,6 +1,11 @@
 import 'package:ecommerce_app/presentation/mainhomescreen/Main_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // Import BLoC package
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart'; // Import BLoC package
 
 // Dummy BLoC event and state for example
 class NavigationCubit extends Cubit<int> {
@@ -13,22 +18,135 @@ class NavigationCubit extends Cubit<int> {
 }
 
 class ReceiptPage extends StatelessWidget {
-  final String orderId = 'ORD123456';
-  final String customerName = 'John Doe';
-  final String transactionId = 'txn_1234567890';
-  final double totalAmount = 200.0;
-
-  final List<Map<String, dynamic>> items = [
-    {'name': 'Product 1', 'quantity': 2, 'price': 50.0},
-    {'name': 'Product 2', 'quantity': 1, 'price': 100.0},
-  ];
+  final String orderId;
+  final String customerName;
+  final String transactionId;
+  final double totalAmount;
+  final List<Map<String, dynamic>> items;
+  const ReceiptPage({
+    Key? key,
+    required this.orderId,
+    required this.customerName,
+    required this.transactionId,
+    required this.totalAmount,
+    required this.items,
+  }) : super(key: key);
 
   @override
+  Future<void> generatePdf(BuildContext context) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Center(
+              child: pw.Text('Receipt',
+                  style: pw.TextStyle(
+                      fontSize: 32, fontWeight: pw.FontWeight.bold)),
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text('Order ID: $orderId'),
+            pw.Text('Customer: $customerName'),
+            pw.Text('Transaction ID: $transactionId'),
+            pw.SizedBox(height: 20),
+            pw.Text('Items Purchased:',
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Table(
+              border: pw.TableBorder.all(),
+              children: [
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Item',
+                            style:
+                                pw.TextStyle(fontWeight: pw.FontWeight.bold))),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Quantity',
+                            style:
+                                pw.TextStyle(fontWeight: pw.FontWeight.bold))),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Price',
+                            style:
+                                pw.TextStyle(fontWeight: pw.FontWeight.bold))),
+                  ],
+                ),
+                for (var item in items)
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(item['name'])),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(item['quantity'].toString())),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('\$${item['price']}')),
+                    ],
+                  ),
+              ],
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text('Total: \$${totalAmount.toStringAsFixed(2)}',
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 20),
+            pw.Center(
+                child: pw.Text('Payment Successful!',
+                    style: pw.TextStyle(
+                        fontSize: 20, fontWeight: pw.FontWeight.bold))),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      // Step 1: Get the downloads directory
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = "${directory.path}/receipt.pdf"; // Filename
+
+      // Step 2: Save the file
+      final file = File(filePath);
+      await file.writeAsBytes(await pdf.save());
+
+      print('PDF Saved: $filePath');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF downloaded successfully! 🎉'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Optional: Show snackbar or toast
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Receipt downloaded successfully!')),
+      // );
+    } catch (e) {
+      print('Error saving PDF: $e');
+    }
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Receipt'),
         backgroundColor: Colors.green,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.download), // Download icon
+            onPressed: () {
+              generatePdf(context); // Call the PDF generate function
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -186,7 +304,7 @@ void main() {
     BlocProvider(
       create: (_) => NavigationCubit(), // Provide the BLoC to the entire app
       child: MaterialApp(
-        home: ReceiptPage(),
+        home: HomePage(),
       ),
     ),
   );

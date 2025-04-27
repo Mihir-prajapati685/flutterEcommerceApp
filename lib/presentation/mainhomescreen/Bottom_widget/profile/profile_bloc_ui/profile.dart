@@ -9,19 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-class Profile extends StatefulWidget {
+class Profile extends StatelessWidget {
   @override
-  State<Profile> createState() => Profile_widget();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => ProfileBloc()..add(ProfilePageInitialEvent()),
+      child: ProfileContent(),
+    );
+  }
 }
 
-class Profile_widget extends State<Profile> {
-  final ProfileBloc profileBloc = ProfileBloc();
-
-  @override
-  void initState() {
-    super.initState();
-    profileBloc.add(ProfilePageInitialEvent());
-  }
+class ProfileContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,12 +40,13 @@ class Profile_widget extends State<Profile> {
             ),
             SizedBox(height: 30),
             BlocBuilder<ProfileBloc, ProfileState>(
-              bloc: profileBloc,
               builder: (context, state) {
                 if (state is ProfileDataFromTheFirebaseErrorState) {
                   return Text("Error loading profile data");
+                } else if (state is ProfileDataFromTheFirebaseDataNOtState) {
+                  return Text("No user found. Please login again.");
                 } else if (state is ProfileDataFromTheFirebaseState) {
-                  var data = state.profiledata; // Fetch single user data
+                  var data = state.profiledata;
                   return Row(
                     children: [
                       CircleAvatar(
@@ -72,10 +71,8 @@ class Profile_widget extends State<Profile> {
                       ),
                     ],
                   );
-                } else if (state is ProfileDataFromTheFirebaseDataNOtState) {
-                  return Text('Error data fetch');
                 }
-                return CircularProgressIndicator(); // Show loader while fetching data
+                return CircularProgressIndicator();
               },
             ),
             SizedBox(height: 20),
@@ -123,7 +120,7 @@ class ProfileMenuItem extends StatelessWidget {
                 Icons.logout_outlined,
                 color: Colors.red,
               )
-            : SizedBox(),
+            : null,
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle, style: const TextStyle(color: Colors.grey)),
         trailing:
@@ -153,11 +150,9 @@ class ProfileMenuItem extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => Settingpage()));
               break;
             case 5:
-              Fluttertoast.showToast(msg: 'Log Out SucessFully');
-              Navigator.push(
+              Fluttertoast.showToast(msg: 'Log Out Successfully');
+              Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (context) => Sign_up()));
-              break;
-            default:
               break;
           }
         },

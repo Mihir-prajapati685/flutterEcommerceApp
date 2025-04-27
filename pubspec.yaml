@@ -57,6 +57,9 @@ dependencies:
   liquid_pull_to_refresh: ^3.0.1
   shimmer: ^3.0.0
   razorpay_flutter: 1.4.0
+  pdf: ^3.10.4
+  printing: ^5.10.4
+  path_provider: ^2.0.14
 
 
 dev_dependencies:
