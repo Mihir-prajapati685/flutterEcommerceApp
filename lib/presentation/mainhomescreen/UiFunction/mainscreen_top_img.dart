@@ -52,55 +52,6 @@ class _TopimgPageState extends State<TopimgPage> {
             ),
           ),
         ),
-        Positioned(
-          left: 20,
-          top: 300,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Fashion\n',
-                      style: GoogleFonts.radioCanada(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 50,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'Sale',
-                      style: GoogleFonts.radioCanada(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 50,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 5),
-              Container(
-                height: 40,
-                width: 200,
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: TextButton(
-                  onPressed: () {
-                    // Navigator.push(...)
-                  },
-                  child: Text(
-                    'Check',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
