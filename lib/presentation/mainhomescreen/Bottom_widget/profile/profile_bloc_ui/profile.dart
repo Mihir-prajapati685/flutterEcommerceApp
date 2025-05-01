@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_app/presentation/authentication/Signuppageauth/signup.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/profile/Orderpage/orderpage.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/profile/profileinformation.dart';
@@ -5,9 +8,12 @@ import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/profile/
 import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/profile/reviewpage.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/profile/settingspage.dart';
 import 'package:ecommerce_app/presentation/mainhomescreen/Bottom_widget/profile/profile_bloc_ui/Shippingaddresspage/shippingpage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Profile extends StatelessWidget {
   @override
@@ -19,7 +25,51 @@ class Profile extends StatelessWidget {
   }
 }
 
-class ProfileContent extends StatelessWidget {
+class ProfileContent extends StatefulWidget {
+  @override
+  State<ProfileContent> createState() => _ProfileContentState();
+}
+
+class _ProfileContentState extends State<ProfileContent> {
+  File? _pickedImage;
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        File imageFile = File(pickedFile.path);
+
+        // Upload to Firebase Storage
+        final user = FirebaseAuth.instance.currentUser;
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('user_profile_images')
+            .child('${user!.uid}.jpg');
+
+        await storageRef.putFile(imageFile);
+
+        // Get download URL
+        String downloadURL = await storageRef.getDownloadURL();
+
+        // Update Firestore user document
+        await FirebaseFirestore.instance
+            .collection('signincollection')
+            .doc(user.uid)
+            .update({'img': downloadURL});
+
+        setState(() {
+          _pickedImage = imageFile;
+        });
+
+        Fluttertoast.showToast(msg: 'Profile Image Updated!');
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Profile not updated');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,9 +99,35 @@ class ProfileContent extends StatelessWidget {
                   var data = state.profiledata;
                   return Row(
                     children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundImage: NetworkImage(data['img'] ?? ""),
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundImage: _pickedImage != null
+                                ? FileImage(_pickedImage!)
+                                : NetworkImage(data['img'] ?? "")
+                                    as ImageProvider,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: _pickImageFromGallery,
+                              child: Container(
+                                padding: EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.redAccent,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(width: 16),
                       Column(

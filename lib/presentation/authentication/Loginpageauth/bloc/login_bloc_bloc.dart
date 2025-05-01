@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -32,29 +31,50 @@ class LoginBlocBloc extends Bloc<LoginBlocEvent, LoginBlocState> {
       emit(
           LoginPasswordEmptyStateError(passerror: "Please Enter the password"));
     } else {
+      // try {
+      //   CollectionReference collref =
+      //       FirebaseFirestore.instance.collection("signincollection");
+      //   QuerySnapshot querySnapshotemail = await collref
+      //       .where('email', isEqualTo: event.getusernamevalue)
+      //       .get();
+      //   QuerySnapshot querySnapshotpassword = await collref
+      //       .where('password', isEqualTo: event.getpasswordvalue)
+      //       .get();
+      //   if (querySnapshotemail.docs.isEmpty) {
+      //     emit(EmailNotMatchState());
+      //   } else if (querySnapshotpassword.docs.isEmpty) {
+      //     emit(PasswordNotMatchState());
+      //   } else if (querySnapshotemail.docs.isNotEmpty &&
+      //       querySnapshotpassword.docs.isNotEmpty) {
+      //     emit(LoginUsernameTextfeildSucessState());
+      //   }
+      // } catch (e) {
+      //   emit(CatchErrorState(error: e.toString()));
+      // }
+
       try {
-        CollectionReference collref =
-            FirebaseFirestore.instance.collection("signincollection");
-        QuerySnapshot querySnapshotemail = await collref
-            .where('email', isEqualTo: event.getusernamevalue)
-            .get();
-        QuerySnapshot querySnapshotpassword = await collref
-            .where('password', isEqualTo: event.getpasswordvalue)
-            .get();
-        if (querySnapshotemail.docs.isEmpty) {
-          emit(EmailNotMatchState());
-        } else if (querySnapshotpassword.docs.isEmpty) {
-          emit(PasswordNotMatchState());
-        } else if (querySnapshotemail.docs.isNotEmpty &&
-            querySnapshotpassword.docs.isNotEmpty) {
+        // Firebase Auth Login
+        final credential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: event.getusernamevalue,
+          password: event.getpasswordvalue,
+        );
+
+        User? user = credential.user;
+
+        if (user != null) {
           emit(LoginUsernameTextfeildSucessState());
         }
-      } catch (e) {
-        emit(CatchErrorState(error: e.toString()));
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'user-not-found') {
+          emit(EmailNotMatchState());
+        } else if (e.code == 'wrong-password') {
+          emit(PasswordNotMatchState());
+        } else {
+          emit(CatchErrorState(error: e.message.toString()));
+        }
       }
     }
-    // if (!event.getusernamevalue.isEmpty && !event.getpasswordvalue.isEmpty) {
-    // }
   }
 
   FutureOr<void> loginOneCharactorAccessEvent(
