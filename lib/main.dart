@@ -14,16 +14,16 @@ void main() async {
   // Initialize Firebase only if it's not already initialized
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(
-      // options: const FirebaseOptions(
-      //     apiKey: "AIzaSyBxdD72FG0xo6UZJAfphpoIp7rDxmUdds4",
-      //     authDomain: "ecommerceproject-7b81e.firebaseapp.com",
-      //     databaseURL:
-      //         "https://ecommerceproject-7b81e-default-rtdb.firebaseio.com",
-      //     projectId: "ecommerceproject-7b81e",
-      //     storageBucket: "ecommerceproject-7b81e.firebasestorage.app",
-      //     messagingSenderId: "40092228276",
-      //     appId: "1:40092228276:web:12df5d1d88dbab9befd5e1",
-      //     measurementId: "G-BMZ17ED0YT"),
+      options: const FirebaseOptions(
+          apiKey: "AIzaSyBxdD72FG0xo6UZJAfphpoIp7rDxmUdds4",
+          authDomain: "ecommerceproject-7b81e.firebaseapp.com",
+          databaseURL:
+              "https://ecommerceproject-7b81e-default-rtdb.firebaseio.com",
+          projectId: "ecommerceproject-7b81e",
+          storageBucket: "ecommerceproject-7b81e.firebasestorage.app",
+          messagingSenderId: "40092228276",
+          appId: "1:40092228276:web:12df5d1d88dbab9befd5e1",
+          measurementId: "G-BMZ17ED0YT"),
     );
   }
   runApp(
