@@ -70,6 +70,7 @@ class _ProductDetailState extends State<ProductDetail> {
           msg: "Please select a size before adding to cart.");
       return;
     }
+    
     try {
       final cartData = {
         ...productData!,

@@ -54,9 +54,12 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     try {
       final user = FirebaseAuth.instance.currentUser!;
       final collection = FirebaseFirestore.instance.collection('addtocart');
+      final productIdAsString = event.productId.toString();
+      final productIdAsInt =
+          int.tryParse(event.productId) ?? -1; // safely try parsing int
 
       QuerySnapshot snapshot = await collection
-          .where('id', isEqualTo: int.parse(event.productId))
+          .where('id', whereIn: [productIdAsString, productIdAsInt])
           .where('userId', isEqualTo: user.uid)
           .get();
 
@@ -65,7 +68,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         for (var doc in snapshot.docs) {
           await doc.reference.delete();
         }
-
         // Emit success state if product is deleted successfully
         emit(ProductDeleteSucessState()); // Send the id of the deleted product
       } else {
