@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -58,24 +59,30 @@ class _ProductDetailState extends State<ProductDetail> {
   }
 
   Future<void> addTocartdata() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      Fluttertoast.showToast(msg: "User not logged in");
+      return;
+    }
+
     if (selectedSize == "Size") {
       Fluttertoast.showToast(
           msg: "Please select a size before adding to cart.");
       return;
     }
-
     try {
       final cartData = {
         ...productData!,
         'selectedSize': selectedSize,
         'selectedColor': selectedColor,
-        'id': productData!['id'].toString(),
-        'addedAt': Timestamp.now(), // optional: to track when it was added
+        'userId': user.uid,
+        'productId': widget.productId,
+        'addedAt': Timestamp.now(),
       };
 
       await FirebaseFirestore.instance
           .collection('addtocart')
-          .doc(widget.productId)
+          .doc('${user.uid}_${widget.productId}')
           .set(cartData);
 
       print("Product added to cart");

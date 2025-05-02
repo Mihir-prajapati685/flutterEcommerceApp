@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 
 part 'addtocart_event.dart';
@@ -15,19 +16,30 @@ class AddtocartBloc extends Bloc<AddtocartEvent, AddtocartState> {
   FutureOr<void> addTocartButtonClick(
       AddTocartButtonClick event, Emitter<AddtocartState> emit) async {
     try {
-      CollectionReference collref =
-          FirebaseFirestore.instance.collection('AddToCart');
+      final user = FirebaseAuth.instance.currentUser;
 
-      // Check if email already exists
-      QuerySnapshot querySnapshotid =
-          await collref.where('id', isEqualTo: event.id).get();
-      QuerySnapshot querySnapshotname =
-          await collref.where('name', isEqualTo: event.name).get();
-      if (querySnapshotid.docs.isNotEmpty &&
-          querySnapshotname.docs.isNotEmpty) {
+      if (user == null) {
+        // Handle case: user not logged in
+        print("user not found");
+        emit(CatchErrorAddToCartState());
+        return;
+      }
+
+      print("useruid ${user.uid}");
+      CollectionReference collref =
+          FirebaseFirestore.instance.collection('addtocart');
+
+      // Check if product with same ID and same user already exists
+      QuerySnapshot querySnapshot = await collref
+          .where('uid', isEqualTo: user.uid)
+          .where('id', isEqualTo: event.id)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
         emit(AlreadyProductExistTocartState());
       } else {
         await collref.add({
+          'uid': user.uid, // 👈 Add this!
           'id': event.id,
           'img': event.img,
           'name': event.name,

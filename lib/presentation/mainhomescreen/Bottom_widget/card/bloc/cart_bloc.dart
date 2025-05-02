@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:meta/meta.dart';
 
 part 'cart_event.dart';
@@ -16,19 +17,34 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   FutureOr<void> carPageInitialEvent(
       CarPageInitialEvent event, Emitter<CartState> emit) async {
     try {
-      final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-      QuerySnapshot querySnapshot =
-          await _firestore.collection('addtocart').get();
-      if (querySnapshot.docs.isEmpty) {
-        emit(FirebasedatabaseEmptyState());
-      } else {
-        List<Map<String, dynamic>> data = querySnapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList();
+      // emit(CartLoadingState()); // Optional: show loading spinner
 
-        emit(CartdataFetchSucessfullState(data));
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('addtocart')
+            .where('userId',
+                isEqualTo: user.uid) // 👈 ensure this matches Firestore
+            .get();
+
+        if (querySnapshot.docs.isEmpty) {
+          emit(FirebasedatabaseEmptyState());
+        } else {
+          List<Map<String, dynamic>> data = querySnapshot.docs
+              .map((doc) => doc.data() as Map<String, dynamic>)
+              .toList();
+
+          emit(CartdataFetchSucessfullState(data));
+        }
+      } else {
+        // emit(
+        //     CartUserNotLoggedInState());
+        // Optional: to handle unauthenticated users
+        print("hiiiiiiiiiiiiiii");
       }
     } catch (e) {
+      print("Error fetching cart data: $e");
       emit(CartFetchdataErrorState());
     }
   }
@@ -36,11 +52,13 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   FutureOr<void> clickedRemoveProductEvent(
       ClickedRemoveProductEvent event, Emitter<CartState> emit) async {
     try {
-      var collection = FirebaseFirestore.instance.collection('addtocart');
+      final user = FirebaseAuth.instance.currentUser!;
+      final collection = FirebaseFirestore.instance.collection('addtocart');
 
-      // Fetch the product by id to be deleted from Firestore
-      var snapshot =
-          await collection.where('id', isEqualTo: event.productId).get();
+      QuerySnapshot snapshot = await collection
+          .where('id', isEqualTo: int.parse(event.productId))
+          .where('userId', isEqualTo: user.uid)
+          .get();
 
       if (snapshot.docs.isNotEmpty) {
         // Delete the document in Firestore
@@ -56,7 +74,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       }
     } catch (e) {
       // Handle any errors during the product removal
-      emit(ProductDeleteErrorState());
+      emit(CartFetchdataErrorState());
     }
   }
 }

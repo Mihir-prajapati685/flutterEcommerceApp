@@ -69,6 +69,9 @@ class _Cart extends State<Cart> {
                               msg: "Product Delete Successfully");
                         } else if (state is ProdutDeleteErrorState) {
                           Fluttertoast.showToast(msg: "Product Delete Error");
+                        } else if (state is ProductDeleteErrorState) {
+                          Fluttertoast.showToast(
+                              msg: "Product Delete nai thay ");
                         }
                       },
                       builder: (context, state) {

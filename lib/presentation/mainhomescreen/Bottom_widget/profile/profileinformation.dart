@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:io';
 
 class PersonalInfoScreen extends StatefulWidget {
   @override
@@ -11,214 +8,96 @@ class PersonalInfoScreen extends StatefulWidget {
 }
 
 class _PersonalInfoScreenState extends State<PersonalInfoScreen> {
-  bool isEditing = false;
-  String username = "John Doe";
-  String email = "johndoe@example.com";
-  String password = "********"; // Hide actual password
-  String profileImage = "https://via.placeholder.com/150"; // Placeholder image
-
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  String username = "Loading...";
+  String email = "Loading...";
+  String password = "********";
 
   @override
   void initState() {
     super.initState();
-    usernameController.text = username;
-    emailController.text = email;
-    passwordController.text = password;
     _fetchUserData();
   }
 
   // Function to fetch user data from Firestore
   Future<void> _fetchUserData() async {
     try {
-      // Get current user's email from FirebaseAuth
-      User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        print("No user is logged in");
+      User? user = FirebaseAuth.instance.currentUser;
+      print("🔍 FirebaseAuth.currentUser: $user");
+      if (user == null) {
+        print("No user logged in! Please sign in first.");
         return;
       }
 
-      String userEmail = currentUser.email!;
+      String uid = user.uid;
+      print("Logged-in User UID: $uid");
 
-      // Fetch the user document from Firestore
-      final snapshot = await FirebaseFirestore.instance
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
           .collection('signincollection')
-          .where('email', isEqualTo: userEmail)
-          .limit(1)
+          .where('uid', isEqualTo: uid) // 🔥 Match 'uid' field in Firestore
           .get();
 
-      if (snapshot.docs.isNotEmpty) {
-        var userDoc = snapshot.docs.first;
+      if (querySnapshot.docs.isNotEmpty) {
+        // 🔥 Get the first matching document
+        DocumentSnapshot userdoc = querySnapshot.docs.first;
+        print("Document ID found: ${userdoc.id}");
+        print("Document Data: ${userdoc.data()}");
 
-        setState(() {
-          username = userDoc['username'] ?? 'Unknown';
-          email = userDoc['email'] ?? 'No email found';
-          password = userDoc['password'] ?? '********';
-          profileImage =
-              userDoc['profileImage'] ?? "https://via.placeholder.com/150";
-          usernameController.text = username;
-          emailController.text = email;
-          passwordController.text = password;
-        });
+        Map<String, dynamic>? userdata =
+            userdoc.data() as Map<String, dynamic>?;
+
+        if (userdata != null) {
+          print(userdata);
+          setState(() {
+            username = (userdata['username'] ?? '').toString().trim();
+            email = (userdata['email'] ?? '').toString().trim();
+            password = (userdata['password'] ?? '********').toString().trim();
+
+            print("sucessfully geting");
+          });
+        } else {
+          print("Error: Document exists but has no data!");
+        }
       } else {
-        print("No user data found for this email");
+        print("Error: No document found for this user!");
       }
     } catch (e) {
-      print("Error fetching user data: $e");
+      print("Error fetching profile data: $e");
     }
-  }
-
-  // Function to pick a new image for profile
-  Future<void> pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile =
-        await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      // Update the profile image immediately with the local image path
-      setState(() {
-        profileImage = pickedFile.path;
-      });
-    }
-  }
-
-  // Function to upload the picked image to Firebase Storage and get the URL
-  Future<String?> uploadImageToFirebase(File imageFile) async {
-    try {
-      FirebaseStorage storage = FirebaseStorage.instance;
-      Reference ref = storage
-          .ref()
-          .child('profile_images/${DateTime.now().millisecondsSinceEpoch}');
-      UploadTask uploadTask = ref.putFile(imageFile);
-
-      TaskSnapshot snapshot = await uploadTask;
-      String downloadUrl = await snapshot.ref.getDownloadURL();
-
-      return downloadUrl;
-    } catch (e) {
-      print("Error uploading image: $e");
-      return null;
-    }
-  }
-
-  // Function to update the user data in Firestore
-  Future<void> updateUserData() async {
-    try {
-      // Get current user's email from FirebaseAuth
-      User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        print("No user is logged in");
-        return;
-      }
-
-      String userEmail = currentUser.email!;
-
-      String? uploadedImageUrl = profileImage.startsWith('http')
-          ? profileImage // Use existing URL if no new image is selected
-          : await uploadImageToFirebase(
-              File(profileImage)); // Upload new image if selected
-
-      // Update user document in Firestore
-      await FirebaseFirestore.instance
-          .collection('signincollection')
-          .doc(userEmail) // Use email as document ID or you can use UID
-          .update({
-        'username': usernameController.text,
-        'email': emailController.text,
-        'password': passwordController.text,
-        'profileImage': uploadedImageUrl ??
-            profileImage, // Use the new or existing profile image URL
-      });
-
-      setState(() {
-        // Save updated data
-        username = usernameController.text;
-        email = emailController.text;
-        password = passwordController.text;
-      });
-
-      print("User data updated successfully");
-    } catch (e) {
-      print("Error updating user data: $e");
-    }
-  }
-
-  void toggleEditMode() {
-    setState(() {
-      isEditing = !isEditing;
-      if (!isEditing) {
-        // Save changes when switching back
-        username = usernameController.text;
-        email = emailController.text;
-        password = passwordController.text;
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Personal Information"),
-        actions: [
-          IconButton(
-            icon: Icon(isEditing ? Icons.check : Icons.edit),
-            onPressed: () {
-              if (isEditing) {
-                updateUserData(); // Update data when in edit mode
-              }
-              toggleEditMode(); // Toggle edit mode
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text("Personal Information")),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            GestureDetector(
-              onTap: isEditing
-                  ? pickImage
-                  : null, // Allow image change in edit mode
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage: FileImage(File(profileImage)),
-                child: isEditing
-                    ? Icon(Icons.camera_alt, color: Colors.white, size: 30)
-                    : null,
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.blueAccent,
+              child: Text(
+                username.isNotEmpty ? username[0].toUpperCase() : "?",
+                style: TextStyle(fontSize: 40, color: Colors.white),
               ),
             ),
             SizedBox(height: 20),
-            buildTextField("Username", usernameController),
-            buildTextField("Email", emailController),
-            buildTextField("Password", passwordController, isPassword: true),
-            if (isEditing)
-              ElevatedButton(
-                onPressed: () {
-                  updateUserData(); // Update the data when clicked on update
-                },
-                child: Text("Update"),
-              ),
+            buildDisplayField("username", username),
+            buildDisplayField("email", email),
+            buildDisplayField("password", password),
           ],
         ),
       ),
     );
   }
-
-  // Widget to build text fields for user input
-  Widget buildTextField(String label, TextEditingController controller,
-      {bool isPassword = false}) {
+  Widget buildDisplayField(String label, String value) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8),
-      child: TextField(
-        controller: controller,
-        readOnly: !isEditing,
-        obscureText: isPassword,
+      child: TextFormField(
+       
         decoration: InputDecoration(
           labelText: label,
+          hintText:value,
           border: OutlineInputBorder(),
         ),
       ),
