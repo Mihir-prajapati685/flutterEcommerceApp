@@ -244,36 +244,36 @@ class _LoginButtonState extends State<Login_button> {
                       ),
                     ),
                     SizedBox(height: 20),
-                    Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          InkWell(
-                            onTap: () async {
-                              loginbloc.add(GoogleButtonClickedEvent());
-                              SharedPreferences sharedPreferences =
-                                  await SharedPreferences.getInstance();
-                              await sharedPreferences.setBool('islogin', true);
-                            },
-                            child: Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(25),
-                                border: Border.all(color: Colors.red),
-                                color: Colors.white,
-                              ),
-                              child: Padding(
-                                padding: EdgeInsets.all(10),
-                                child: Image.network(
-                                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUSKL2F8gOghzLdVGApyBYLZ-ant8KEsNo2DZqLOtzW4ZZkjonnpnv8knoz1wog5cXiaU&usqp=CAU",
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    // Center(
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       InkWell(
+                    //         onTap: () async {
+                    //           loginbloc.add(GoogleButtonClickedEvent());
+                    //           SharedPreferences sharedPreferences =
+                    //               await SharedPreferences.getInstance();
+                    //           await sharedPreferences.setBool('islogin', true);
+                    //         },
+                    //         child: Container(
+                    //           width: 60,
+                    //           height: 60,
+                    //           decoration: BoxDecoration(
+                    //             borderRadius: BorderRadius.circular(25),
+                    //             border: Border.all(color: Colors.red),
+                    //             color: Colors.white,
+                    //           ),
+                    //           child: Padding(
+                    //             padding: EdgeInsets.all(10),
+                    //             child: Image.network(
+                    //               "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUSKL2F8gOghzLdVGApyBYLZ-ant8KEsNo2DZqLOtzW4ZZkjonnpnv8knoz1wog5cXiaU&usqp=CAU",
+                    //             ),
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
