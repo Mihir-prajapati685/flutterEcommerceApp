@@ -7,7 +7,9 @@
     }
   ],
   "routes": [
-    { "src": "/assets/(.*)", "dest": "/build/web/assets/$1" },
-    { "src": "/(.*)", "dest": "/build/web/$1" }
+    {
+      "src": "/(.*)",
+      "dest": "/build/web/$1"
+    }
   ]
 }
