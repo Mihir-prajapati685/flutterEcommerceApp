@@ -43,7 +43,7 @@ A cross-platform e-commerce application built using **Flutter** and **Firebase**
 - **Firebase Authentication** – User login
 - **Firestore Database** – Real-time data storage
 - **Razorpay** – Online payments
-- **Provider / BLoC** (if used – optional)
+- **BLoC** 
 
 ---
 
