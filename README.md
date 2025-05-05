@@ -50,7 +50,7 @@ A cross-platform e-commerce application built using **Flutter** and **Firebase**
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/yourusername/ecommerce-clothes-app.git
+git clone https://github.com/Mihir-prajapati685/flutterEcommerceApp.git
 cd ecommerce-clothes-app
 flutter pub get
 flutter run
