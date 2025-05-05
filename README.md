@@ -1,16 +1,57 @@
-# ecommerce_app
+# 👕 Ecommerce Clothes App
 
-A new Flutter project.
+A cross-platform e-commerce application built using **Flutter** and **Firebase**, designed to deliver a smooth shopping experience for clothes categorized under Men, Women, and Kids. The app supports multiple platforms including **Android**, **iOS**, and **Web**.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 Features
 
-A few resources to get you started if this is your first Flutter project:
+- 🔐 **User Authentication**
+  - Firebase Email/Password login
+  - Google Sign-In integration
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- 🔄 **Firebase Integration**
+  - Firestore used to store:
+    - Registered Users
+    - Product Details
+    - Cart Items
+    - Favourites
+    - Address and Orders
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- 🛍️ **Shopping Categories**
+  - Browse products by Men, Women, and Kids
+
+- 🛒 **Shopping Functionalities**
+  - Add to Cart
+  - Add to Favourites
+  - Buy Now option
+
+- 👤 **User Profile**
+  - View and update user profile
+  - Manage multiple shipping addresses
+
+- 💳 **Payment Integration**
+  - Razorpay payment gateway
+  - Receipt generated after payment
+  - Option to download receipt
+
+---
+
+## 🛠️ Tech Stack
+
+- **Flutter** – UI development
+- **Firebase Authentication** – User login
+- **Firestore Database** – Real-time data storage
+- **Razorpay** – Online payments
+- **Provider / BLoC** (if used – optional)
+
+---
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/yourusername/ecommerce-clothes-app.git
+cd ecommerce-clothes-app
+flutter pub get
+flutter run
+
